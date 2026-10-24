@@ -107,6 +107,14 @@
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="ProductosInventario.h" />
+    <ClCompile Include="ProductosInventario.cpp" />
+    <ClInclude Include="VentasCobro.h" />
+    <ClCompile Include="VentasCobro.cpp" />
+    <ClInclude Include="ComprobantesHistorial.h" />
+    <ClCompile Include="ComprobantesHistorial.cpp" />
+    <ClInclude Include="UsuariosPermisos.h" />
+    <ClCompile Include="UsuariosPermisos.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
