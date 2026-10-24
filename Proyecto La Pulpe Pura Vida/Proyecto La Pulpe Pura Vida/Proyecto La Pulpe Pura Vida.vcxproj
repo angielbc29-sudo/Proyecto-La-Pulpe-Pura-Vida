@@ -105,11 +105,16 @@
     <QtRcc Include="ProyectoLaPulpePuraVida.qrc" />
     <QtUic Include="ProyectoLaPulpePuraVida.ui" />
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
+    <ClCompile Include="Administrador.cpp" />
+    <ClCompile Include="Cajero.cpp" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="Administrador.h" />
+    <ClInclude Include="Cajero.h" />
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />
     <ClCompile Include="ProductosInventario.cpp" />
+    <ClInclude Include="Turno.h" />
     <ClInclude Include="Usuario.h" />
     <ClInclude Include="VentasCobro.h" />
     <ClCompile Include="Usuario.cpp" />

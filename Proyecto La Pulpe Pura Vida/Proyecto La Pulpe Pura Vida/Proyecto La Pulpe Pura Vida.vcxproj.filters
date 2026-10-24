@@ -70,9 +70,24 @@
     <ClInclude Include="Permiso.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Cajero.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Administrador.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Turno.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Usuario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cajero.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Administrador.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
