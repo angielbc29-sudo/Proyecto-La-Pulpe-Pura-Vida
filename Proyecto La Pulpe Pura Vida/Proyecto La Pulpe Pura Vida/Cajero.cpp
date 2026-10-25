@@ -1,48 +1,28 @@
-#include "Cajero.h"
+#pragma once
 
-// ---------------- Constructor ----------------
+#include <memory>
+#include "Usuario.h"
 
-Cajero::Cajero(int id, std::string user, std::string pass, std::string nombre,
-    std::string ced, std::string tel, bool activo, Turno t)
-    : Usuario(id, user, pass, nombre, ced, tel, activo)   // llama al constructor de la clase padre
+// Sesion: patrón Singleton (solo existe una sesión en toda la aplicación)
+class Sesion
 {
-    this->turno = t;
-}
+private:
+    static Sesion* instancia;   // única instancia de la clase (atributo estático)
+    std::shared_ptr<Usuario> usuarioActual;   // puntero inteligente: se libera solo
 
-// ---------------- Turno ----------------
+    // Constructor privado: nadie fuera de la clase puede hacer "Sesion s;"
+    Sesion();
 
-Turno Cajero::getTurno() const
-{
-    return turno;
-}
+    // Se bloquea la copia para que no se pueda duplicar la sesión
+    Sesion(const Sesion&) = delete;
+    Sesion& operator=(const Sesion&) = delete;
 
-void Cajero::setTurno(Turno t)
-{
-    turno = t;
-}
+public:
+    // Devuelve la única instancia (la crea si todavía no existe)
+    static Sesion& getInstancia();
 
-// ---------------- Métodos heredados ----------------
-
-bool Cajero::tienePermiso(Permiso p) const
-{
-    // El cajero solo puede realizar ventas y consultar el historial
-    return p == Permiso::REALIZAR_VENTA
-        || p == Permiso::CONSULTAR_HISTORIAL;
-}
-
-std::string Cajero::getNombreRol() const
-{
-    return "Cajero";
-}
-
-std::string Cajero::getDescripcionTurno() const
-{
-    switch (turno)
-    {
-    case Turno::MANANA:   return "Turno de la manana";
-    case Turno::TARDE:    return "Turno de la tarde";
-    case Turno::NOCHE:    return "Turno de la noche";
-    case Turno::COMPLETO: return "Turno completo";
-    }
-    return "Turno desconocido";
-}
+    void     iniciar(std::shared_ptr<Usuario> u);
+    void     cerrar();
+    std::shared_ptr<Usuario> getUsuarioActual() const;
+    bool     estaAutenticado() const;
+};
