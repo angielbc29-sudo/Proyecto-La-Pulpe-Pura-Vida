@@ -1,7 +1,5 @@
 #include "Usuario.h"
 
-// ---------------- Constructor / Destructor ----------------
-
 Usuario::Usuario(int id, std::string user, std::string pass,
     std::string nombre, std::string ced, std::string tel, bool activo)
 {
@@ -17,8 +15,6 @@ Usuario::Usuario(int id, std::string user, std::string pass,
 Usuario::~Usuario()
 {
 }
-
-// ---------------- Getters ----------------
 
 int Usuario::getId() const
 {
@@ -49,8 +45,6 @@ bool Usuario::isActivo() const
 {
     return activo;
 }
-
-// ---------------- Setters ----------------
 
 void Usuario::setActivo(bool estado)
 {

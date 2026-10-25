@@ -79,6 +79,9 @@
     <ClInclude Include="Turno.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Sesion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Usuario.cpp">
@@ -90,5 +93,16 @@
     <ClCompile Include="Administrador.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sesion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuPrincipalView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="MenuPrincipalView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
