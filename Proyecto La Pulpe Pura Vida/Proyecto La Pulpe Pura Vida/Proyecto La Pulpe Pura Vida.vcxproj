@@ -105,8 +105,12 @@
     <QtRcc Include="ProyectoLaPulpePuraVida.qrc" />
     <QtUic Include="ProyectoLaPulpePuraVida.ui" />
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
+    <ClCompile Include="GestorInventario.cpp" />
+    <ClCompile Include="Producto.cpp" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="GestorInventario.h" />
+    <ClInclude Include="Producto.h" />
     <ClInclude Include="ProductosInventario.h" />
     <ClCompile Include="ProductosInventario.cpp" />
     <ClInclude Include="VentasCobro.h" />
