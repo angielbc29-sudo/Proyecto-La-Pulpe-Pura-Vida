@@ -113,6 +113,10 @@
     <ClInclude Include="Formato.h" />
     <ClInclude Include="ProductosInventario.h" />
     <ClCompile Include="ProductosInventario.cpp" />
+    <ClInclude Include="Ticket.h" />
+    <ClInclude Include="TicketHtml.h" />
+    <ClInclude Include="TicketPdf.h" />
+    <ClInclude Include="TicketTxt.h" />
     <ClInclude Include="VentasCobro.h" />
     <ClCompile Include="VentasCobro.cpp" />
     <ClInclude Include="ComprobantesHistorial.h" />
