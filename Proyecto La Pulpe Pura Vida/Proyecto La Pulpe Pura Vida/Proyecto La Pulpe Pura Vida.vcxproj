@@ -110,6 +110,10 @@
     <ClCompile Include="MenuPrincipalView.cpp" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="Almacen.h" />
+    <ClInclude Include="AlmacenJson.h" />
+    <ClInclude Include="Errores.h" />
+    <ClInclude Include="Formato.h" />
     <ClInclude Include="Administrador.h" />
     <ClInclude Include="Cajero.h" />
     <QtMoc Include="MenuPrincipalView.h" />
