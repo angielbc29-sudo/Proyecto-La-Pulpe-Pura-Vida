@@ -107,6 +107,10 @@
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="Almacen.h" />
+    <ClInclude Include="AlmacenJson.h" />
+    <ClInclude Include="Errores.h" />
+    <ClInclude Include="Formato.h" />
     <ClInclude Include="ProductosInventario.h" />
     <ClCompile Include="ProductosInventario.cpp" />
     <ClInclude Include="VentasCobro.h" />
