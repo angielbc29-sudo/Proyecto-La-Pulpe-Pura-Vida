@@ -1,8 +1,3 @@
 #pragma once
-
-class ProductosInventario
-{
-public:
-    ProductosInventario();
-    ~ProductosInventario();
-};
+#include "Producto.h"
+#include "GestorInventario.h"

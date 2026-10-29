@@ -17,21 +17,23 @@
       <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
       <Extensions>ui</Extensions>
     </Filter>
-    <Filter Include="Translation Files">
-      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
-      <Extensions>ts</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="ProyectoLaPulpePuraVida.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-    <QtUic Include="ProyectoLaPulpePuraVida.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtMoc Include="ProyectoLaPulpePuraVida.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
+    <ClCompile Include="GestorInventario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Producto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Administrador.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cajero.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuPrincipalView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -39,6 +41,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProductosInventario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sesion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Usuario.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VentasCobro.cpp">
@@ -52,7 +60,43 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GestorInventario.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Producto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Almacen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AlmacenJson.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Errores.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Formato.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Administrador.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cajero.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Permiso.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ProductosInventario.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sesion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Turno.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Usuario.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VentasCobro.h">
@@ -64,5 +108,23 @@
     <ClInclude Include="UsuariosPermisos.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="ProyectoLaPulpePuraVida.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MenuPrincipalView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="ProyectoLaPulpePuraVida.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="ProyectoLaPulpePuraVida.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
 </Project>
