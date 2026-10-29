@@ -120,6 +120,7 @@
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
     <ClInclude Include="GestorInventario.h" />
+    <ClInclude Include="IUsuarioRepository.h" />
     <ClInclude Include="Producto.h" />
     <ClInclude Include="Almacen.h" />
     <ClInclude Include="AlmacenJson.h" />
@@ -129,6 +130,7 @@
     <ClInclude Include="Cajero.h" />
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />
+    <ClInclude Include="ResultadoLogin.h" />
     <ClInclude Include="Sesion.h" />
     <ClInclude Include="Turno.h" />
     <ClInclude Include="Usuario.h" />

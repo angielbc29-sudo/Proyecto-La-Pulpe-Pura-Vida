@@ -1,5 +1,7 @@
 #include "Usuario.h"
 
+// Constructor y destructor 
+
 Usuario::Usuario(int id, std::string user, std::string pass,
     std::string nombre, std::string ced, std::string tel, bool activo)
 {
@@ -16,6 +18,8 @@ Usuario::~Usuario()
 {
 }
 
+// Getters
+
 int Usuario::getId() const
 {
     return id;
@@ -24,6 +28,11 @@ int Usuario::getId() const
 std::string Usuario::getUsername() const
 {
     return username;
+}
+
+std::string Usuario::getPasswordHash() const
+{
+    return passwordHash;
 }
 
 std::string Usuario::getNombreCompleto() const
@@ -45,6 +54,8 @@ bool Usuario::isActivo() const
 {
     return activo;
 }
+
+// Setters
 
 void Usuario::setActivo(bool estado)
 {
