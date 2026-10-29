@@ -105,6 +105,7 @@
     <QtRcc Include="ProyectoLaPulpePuraVida.qrc" />
     <QtUic Include="ProyectoLaPulpePuraVida.ui" />
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
+    <ClCompile Include="AlmacenJson.cpp" />
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
     <ClInclude Include="Almacen.h" />
@@ -118,6 +119,10 @@
     <ClInclude Include="TicketPdf.h" />
     <ClInclude Include="TicketTxt.h" />
     <ClInclude Include="VentasCobro.h" />
+    <ClCompile Include="Ticket.cpp" />
+    <ClCompile Include="TicketHtml.cpp" />
+    <ClCompile Include="TicketPdf.cpp" />
+    <ClCompile Include="TicketTxt.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
     <ClInclude Include="ComprobantesHistorial.h" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
