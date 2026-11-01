@@ -1,28 +1,48 @@
-#pragma once
+#include "Cajero.h"
 
-#include <memory>
-#include "Usuario.h"
+//  Constructor
 
-// Sesion: patrón Singleton (solo existe una sesión en toda la aplicación)
-class Sesion
+Cajero::Cajero(int id, std::string user, std::string pass, std::string nombre,
+    std::string ced, std::string tel, bool activo, Turno t)
+    : Usuario(id, user, pass, nombre, ced, tel, activo)   // llama al constructor de la clase padre
 {
-private:
-    static Sesion* instancia;   // única instancia de la clase (atributo estático)
-    std::shared_ptr<Usuario> usuarioActual;   // puntero inteligente: se libera solo
+    this->turno = t;
+}
 
-    // Constructor privado: nadie fuera de la clase puede hacer "Sesion s;"
-    Sesion();
+// Turno 
 
-    // Se bloquea la copia para que no se pueda duplicar la sesión
-    Sesion(const Sesion&) = delete;
-    Sesion& operator=(const Sesion&) = delete;
+Turno Cajero::getTurno() const
+{
+    return turno;
+}
 
-public:
-    // Devuelve la única instancia (la crea si todavía no existe)
-    static Sesion& getInstancia();
+void Cajero::setTurno(Turno t)
+{
+    turno = t;
+}
 
-    void     iniciar(std::shared_ptr<Usuario> u);
-    void     cerrar();
-    std::shared_ptr<Usuario> getUsuarioActual() const;
-    bool     estaAutenticado() const;
-};
+//  Métodos heredados 
+
+bool Cajero::tienePermiso(Permiso p) const
+{
+    // El cajero solo puede realizar ventas y consultar el historial
+    return p == Permiso::REALIZAR_VENTA
+        || p == Permiso::CONSULTAR_HISTORIAL;
+}
+
+std::string Cajero::getNombreRol() const
+{
+    return "Cajero";
+}
+
+std::string Cajero::getDescripcionTurno() const
+{
+    switch (turno)
+    {
+    case Turno::MANANA:   return "Mañana";
+    case Turno::TARDE:    return "Tarde";
+    case Turno::NOCHE:    return "Noche";
+    case Turno::COMPLETO: return "Completo";
+    }
+    return "Turno desconocido";
+}

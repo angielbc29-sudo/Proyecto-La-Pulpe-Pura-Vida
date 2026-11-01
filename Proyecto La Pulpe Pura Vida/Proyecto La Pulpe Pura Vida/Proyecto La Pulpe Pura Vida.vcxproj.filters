@@ -58,6 +58,15 @@
     <ClCompile Include="UsuariosPermisos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UsuarioJsonRepository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ServicioAutentication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GestorInventario.h">
@@ -114,12 +123,21 @@
     <ClInclude Include="IUsuarioRepository.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UsuarioJsonRepository.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ServicioAutentication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ProyectoLaPulpePuraVida.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="MenuPrincipalView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="LoginDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
