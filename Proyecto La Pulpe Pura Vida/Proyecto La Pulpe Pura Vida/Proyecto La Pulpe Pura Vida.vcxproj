@@ -107,6 +107,7 @@
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
     <QtMoc Include="MenuPrincipalView.h" />
     <ClCompile Include="GestorInventario.cpp" />
+    <ClCompile Include="LoginDialog.cpp" />
     <ClCompile Include="Producto.cpp" />
     <ClCompile Include="Administrador.cpp" />
     <ClCompile Include="Cajero.cpp" />
@@ -114,13 +115,16 @@
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProductosInventario.cpp" />
+    <ClCompile Include="ServicioAutentication.cpp" />
     <ClCompile Include="Sesion.cpp" />
     <ClCompile Include="Usuario.cpp" />
+    <ClCompile Include="UsuarioJsonRepository.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
     <ClInclude Include="GestorInventario.h" />
     <ClInclude Include="IUsuarioRepository.h" />
+    <QtMoc Include="LoginDialog.h" />
     <ClInclude Include="Producto.h" />
     <ClInclude Include="Almacen.h" />
     <ClInclude Include="AlmacenJson.h" />
@@ -131,9 +135,11 @@
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />
     <ClInclude Include="ResultadoLogin.h" />
+    <ClInclude Include="ServicioAutentication.h" />
     <ClInclude Include="Sesion.h" />
     <ClInclude Include="Turno.h" />
     <ClInclude Include="Usuario.h" />
+    <ClInclude Include="UsuarioJsonRepository.h" />
     <ClInclude Include="VentasCobro.h" />
     <ClInclude Include="ComprobantesHistorial.h" />
     <ClInclude Include="UsuariosPermisos.h" />

@@ -3,11 +3,12 @@
 #include <memory>
 #include <QWidget>
 
+class QGridLayout;
 class QLabel;
 class QPushButton;
 class Usuario;
 
-// Vista del menú principal
+// Vista del menú principal (se muestra después de iniciar sesión)
 class MenuPrincipalView : public QWidget
 {
     Q_OBJECT
@@ -15,8 +16,13 @@ class MenuPrincipalView : public QWidget
 private:
     std::shared_ptr<Usuario> usuarioActivo;
 
-    // Elementos de la interfaz 
+    // Elementos de la interfaz (se crean por código, sin archivo .ui)
+    QLabel* lblIniciales;
+    QLabel* lblNombreUsuario;
+    QLabel* lblRolUsuario;
     QLabel* lblBienvenida;
+    QLabel* lblSubtitulo;
+    QGridLayout* gridModulos;
     QPushButton* btnInventario;
     QPushButton* btnVentas;
     QPushButton* btnComprobantes;
