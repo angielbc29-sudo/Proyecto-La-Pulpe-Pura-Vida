@@ -55,9 +55,6 @@
     <ClInclude Include="ProductosInventario.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VentasCobro.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ComprobantesHistorial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
