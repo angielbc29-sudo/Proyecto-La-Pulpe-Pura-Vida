@@ -117,6 +117,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProductosInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
+    <ClInclude Include="Linea.h" />
+    <ClInclude Include="ComprobantesHistorial.h" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
     <ClInclude Include="GestorInventario.h" />
@@ -156,3 +158,4 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
+
