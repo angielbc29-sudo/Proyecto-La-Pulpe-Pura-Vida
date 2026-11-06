@@ -1,4 +1,9 @@
 #include "GestorInventario.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QString>
 
 GestorInventario::GestorInventario() {
 
@@ -90,4 +95,70 @@ bool GestorInventario::descontarStock(const std::string& codigo, int cantidad) {
 		return prod->reducirStock(cantidad);
 	}
 	return false;
+}
+
+// =====================================================
+// PERSISTENCIA OFICIAL: FORMATO JSON (Qt)
+// =====================================================
+
+// Guarda todos los productos en un archivo JSON ordenado
+bool GestorInventario::guardarEnArchivo(const std::string& ruta) {
+	QFile archivo(QString::fromStdString(ruta));
+	if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		return false;
+	}
+
+	QJsonArray arrayProductos;
+	for (const auto& prod : listaProductos) {
+		QJsonObject objProd;
+		objProd["codigo"] = QString::fromStdString(prod.getCodigo());
+		objProd["nombre"] = QString::fromStdString(prod.getNombre());
+		objProd["categoria"] = QString::fromStdString(prod.getCategoria());
+		objProd["precio"] = prod.getPrecio();
+		objProd["stock"] = prod.getStock();
+		objProd["activo"] = prod.getActivo();
+
+		arrayProductos.append(objProd);
+	}
+
+	QJsonDocument doc(arrayProductos);
+	archivo.write(doc.toJson(QJsonDocument::Indented)); // Indented para que se lea ordenado
+	archivo.close();
+	return true;
+}
+
+// Lee el archivo JSON y reconstruye las fichas en la bodega
+bool GestorInventario::cargarDesdeArchivo(const std::string& ruta) {
+	QFile archivo(QString::fromStdString(ruta));
+	if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		return false; // El archivo aun no existe (ej. primera ejecucion)
+	}
+
+	QByteArray datos = archivo.readAll();
+	archivo.close();
+
+	QJsonDocument doc = QJsonDocument::fromJson(datos);
+	if (!doc.isArray()) {
+		return false; // Archivo corrupto o no es lista JSON
+	}
+
+	listaProductos.clear(); // Limpiamos para no duplicar
+
+	QJsonArray arrayProductos = doc.array();
+	for (const auto& valor : arrayProductos) {
+		QJsonObject objProd = valor.toObject();
+
+		std::string cod = objProd["codigo"].toString().toStdString();
+		std::string nom = objProd["nombre"].toString().toStdString();
+		std::string cat = objProd["categoria"].toString().toStdString();
+		double precio = objProd["precio"].toDouble();
+		int stock = objProd["stock"].toInt();
+		bool activo = objProd["activo"].toBool();
+
+		Producto prod(cod, nom, cat, precio, stock);
+		prod.setActivo(activo);
+		listaProductos.push_back(prod);
+	}
+
+	return true;
 }
