@@ -1,9 +1,4 @@
-#include "ProductosInventario.h"
-
-ProductosInventario::ProductosInventario()
-{
-}
-
-ProductosInventario::~ProductosInventario()
-{
-}
+// Módulo de Inventario - Tifany Brais
+// La implementación está separada en:
+//   - Producto.cpp
+//   - GestorInventario.cpp
