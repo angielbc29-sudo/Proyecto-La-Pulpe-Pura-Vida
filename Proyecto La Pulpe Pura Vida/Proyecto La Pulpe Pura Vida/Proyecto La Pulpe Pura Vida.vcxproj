@@ -120,6 +120,7 @@
     <ClCompile Include="Sesion.cpp" />
     <ClCompile Include="Usuario.cpp" />
     <ClCompile Include="UsuarioJsonRepository.cpp" />
+    <ClCompile Include="VentanaInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="TicketHtml.h" />
     <ClInclude Include="TicketPdf.h" />
     <ClInclude Include="TicketTxt.h" />
+    <QtMoc Include="VentanaInventario.h" />
     <ClInclude Include="VentasCobro.h" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketHtml.cpp" />
