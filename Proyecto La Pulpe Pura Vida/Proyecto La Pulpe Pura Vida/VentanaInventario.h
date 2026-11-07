@@ -1,40 +1,44 @@
 #pragma once
+
 #include <QWidget>
-#include <QTableWidget>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
+#include <QScrollArea>
 #include <QLabel>
-#include <QHeaderView>
+#include <QFrame>
 #include <QMessageBox>
-#include <QColor>
+#include <vector>
 #include "GestorInventario.h"
 
 class VentanaInventario : public QWidget {
-	Q_OBJECT
+    Q_OBJECT
 
 private:
-	GestorInventario* gestor;//Puntero a la bodega de productos
+    GestorInventario* gestor;
 
-	//Controles visuales
-	QTableWidget* tablaProductos;
-	QPushButton* btnNuevoProducto;
-	QPushButton* btnCambiarEstado;
-	QPushButton* btnGuardar;
+    // Métricas superiores
+    QLabel* lblTotalUnidades;
+    QLabel* lblTotalAgotados;
+    QLabel* lblValorTotal;
+    QLabel* lblTextoAlerta;
 
-	//Configuración visual y carga
+    // Contenedor de la cuadrícula de tarjetas
+    QWidget* contenedorCards;
+    QGridLayout* gridProductos;
 
-	void configurarInterfaz();
-	void estilizarVentana();
+    void configurarInterfaz();
+    void estilizarVentana();
+    QWidget* crearCardProducto(const Producto& prod);
 
-public: 
-	explicit VentanaInventario(GestorInventario* gestorCompartido, QWidget* parent = nullptr);
-	~VentanaInventario() = default;
+public:
+    explicit VentanaInventario(GestorInventario* gestorCompartido, QWidget* parent = nullptr);
+    ~VentanaInventario() = default;
 
 public slots:
-	void actualizarTabla();
-	void abrirModalNuevoProducto();
-	void alternarEstadoSeleccionado();
-	void guardarCambiosEnDisco();
+    void actualizarVista();
+    void abrirModalNuevoProducto();
+    void guardarCambiosEnDisco();
 };

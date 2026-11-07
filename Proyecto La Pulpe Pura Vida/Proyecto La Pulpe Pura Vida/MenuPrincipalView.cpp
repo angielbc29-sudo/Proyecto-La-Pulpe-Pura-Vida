@@ -11,6 +11,9 @@
 #include "Sesion.h"
 #include "Usuario.h"
 
+#include "VentanaInventario.h"
+#include "GestorInventario.h"
+
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
 namespace
@@ -274,8 +277,16 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     switch (idModulo)
     {
     case 1:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Productos e inventario");
-        break;
+    {
+        // Creamos la bodega, cargamos los datos guardados y abrimos tu ventana
+        // Creamos la bodega dinámicamente y abrimos la ventana
+        GestorInventario* gestor = new GestorInventario();
+        gestor->cargarDesdeArchivo("productos.json");
+        VentanaInventario* ventana = new VentanaInventario(gestor);
+        ventana->setAttribute(Qt::WA_DeleteOnClose);
+        ventana->show();
+    }
+    break;
     case 2:
         QMessageBox::information(this, "Módulo", "Aquí se abrirá Ventas y cobro");
         break;

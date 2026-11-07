@@ -1,0 +1,66 @@
+[
+    {
+        "activo": false,
+        "categoria": "Lacteos",
+        "codigo": "001",
+        "nombre": "Leche Dos Pinos",
+        "precio": 1100,
+        "stock": 15
+    },
+    {
+        "activo": true,
+        "categoria": "Abarrotes",
+        "codigo": "002",
+        "nombre": "Arroz Tio Pelon",
+        "precio": 1400,
+        "stock": 3
+    },
+    {
+        "activo": true,
+        "categoria": "Snacks",
+        "codigo": "003",
+        "nombre": "Galletas Chiky",
+        "precio": 450,
+        "stock": 0
+    },
+    {
+        "activo": true,
+        "categoria": "Abarrotes",
+        "codigo": "004",
+        "nombre": "Cafe molido",
+        "precio": 1200,
+        "stock": 6
+    },
+    {
+        "activo": true,
+        "categoria": "Bebidas",
+        "codigo": "005",
+        "nombre": "Agua natural",
+        "precio": 300,
+        "stock": 20
+    },
+    {
+        "activo": true,
+        "categoria": "Abarrotes",
+        "codigo": "006",
+        "nombre": "Azucar blanca",
+        "precio": 900,
+        "stock": 10
+    },
+    {
+        "activo": true,
+        "categoria": "Preparados",
+        "codigo": "007",
+        "nombre": "Sandwich de jamon",
+        "precio": 1500,
+        "stock": 10
+    },
+    {
+        "activo": true,
+        "categoria": "kjjgjgjb",
+        "codigo": "hhkpk{l{",
+        "nombre": "tyguguijo",
+        "precio": 1,
+        "stock": 0
+    }
+]
