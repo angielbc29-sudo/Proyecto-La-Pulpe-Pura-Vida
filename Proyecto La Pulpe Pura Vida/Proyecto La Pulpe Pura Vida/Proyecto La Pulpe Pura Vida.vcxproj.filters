@@ -67,6 +67,30 @@
     <ClCompile Include="ServicioAutentication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AlmacenJson.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistroUsuarioDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VentanaInventario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ticket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TicketHtml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TicketPdf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TicketTxt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GestionUsuariosView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GestorInventario.h">
@@ -129,6 +153,21 @@
     <ClInclude Include="ServicioAutentication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Linea.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ticket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TicketHtml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TicketPdf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TicketTxt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ProyectoLaPulpePuraVida.h">
@@ -138,6 +177,15 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="LoginDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="RegistroUsuarioDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="VentanaInventario.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="GestionUsuariosView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

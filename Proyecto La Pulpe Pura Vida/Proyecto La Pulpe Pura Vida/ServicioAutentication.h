@@ -7,7 +7,7 @@
 #include "Usuario.h"
 
 // Valida usuario, contraseña y estado de la cuenta
-class ServicioAutentication
+class ServicioAutenticacion
 {
 private:
     IUsuarioRepository* repo;   // de dónde se leen los usuarios (JSON u otro)
@@ -16,7 +16,7 @@ private:
     bool verificarHash(std::string passPlano, std::string hashGuardado);
 
 public:
-    ServicioAutentication(IUsuarioRepository* repo);
+    ServicioAutenticacion(IUsuarioRepository* repo);
 
     // Devuelve el resultado del intento de inicio de sesión.
     // Si es EXITOSO, deja el usuario en usuarioOut.

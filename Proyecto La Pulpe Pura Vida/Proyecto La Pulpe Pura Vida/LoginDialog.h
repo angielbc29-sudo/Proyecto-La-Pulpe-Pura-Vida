@@ -6,7 +6,7 @@
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class ServicioAutentication;
+class ServicioAutenticacion;
 
 // Pantalla de inicio de sesión
 class LoginDialog : public QDialog
@@ -14,7 +14,7 @@ class LoginDialog : public QDialog
     Q_OBJECT
 
 private:
-    ServicioAutentication* authService;
+    ServicioAutenticacion* authService;
 
     // Elementos de la interfaz (se crean por código, sin archivo .ui)
     QLineEdit* txtUsuario;
@@ -28,5 +28,5 @@ private slots:
     void onBotonIniciarSesionClicked();
 
 public:
-    explicit LoginDialog(ServicioAutentication* auth, QWidget* parent = nullptr);
+    explicit LoginDialog(ServicioAutenticacion* auth, QWidget* parent = nullptr);
 };
