@@ -116,6 +116,7 @@
     <ClCompile Include="ProyectoLaPulpePuraVida.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProductosInventario.cpp" />
+    <ClCompile Include="RegistroUsuarioDialog.cpp" />
     <ClCompile Include="ServicioAutentication.cpp" />
     <ClCompile Include="Sesion.cpp" />
     <ClCompile Include="Usuario.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="Cajero.h" />
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />
+    <QtMoc Include="RegistroUsuarioDialog.h" />
     <ClInclude Include="ResultadoLogin.h" />
     <ClInclude Include="ServicioAutentication.h" />
     <ClInclude Include="Sesion.h" />
@@ -163,4 +165,3 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
-
