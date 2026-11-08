@@ -20,6 +20,7 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QStyle>
 #include <QVBoxLayout>
 
 #include "Administrador.h"
@@ -109,6 +110,20 @@ namespace
             QByteArray::fromStdString(texto), QCryptographicHash::Sha256).toHex();
         return hash.toStdString();
     }
+
+    // Texto que se muestra en el aviso cuando no hay ningún error
+    const QString AVISO_NORMAL = "Los campos marcados con * son obligatorios.";
+
+    // Cambia el texto del aviso y su color: gris si es normal, rojo si es un error
+    void mostrarAviso(QLabel* aviso, const QString& texto, bool esError)
+    {
+        aviso->setText(texto);
+        aviso->setProperty("hayError", esError);
+
+        // Se vuelve a aplicar la hoja de estilos para que tome el color nuevo
+        aviso->style()->unpolish(aviso);
+        aviso->style()->polish(aviso);
+    }
 }
 
 // ---------------- Constructor ----------------
@@ -158,11 +173,12 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     txtConfirmar = new QLineEdit(this);
     agregarOjo(txtConfirmar);
 
-    // Mensaje de error (empieza oculto)
+    // Aviso arriba del formulario: siempre visible (así la ventana no cambia de tamaño).
+    // Normalmente es gris y, si algo está mal, muestra el error en rojo.
     lblError = new QLabel(this);
     lblError->setObjectName("lblError");
     lblError->setWordWrap(true);
-    lblError->hide();
+    mostrarAviso(lblError, AVISO_NORMAL, false);
 
     // El turno solo se pide cuando el rol es Cajero
     QWidget* campoTurno = crearCampo(this, "Turno (para cajeros) *", "", cmbTurno);
@@ -193,7 +209,7 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
 
     QGridLayout* grid = new QGridLayout();
     grid->setHorizontalSpacing(16);
-    grid->setVerticalSpacing(12);
+    grid->setVerticalSpacing(8);
     grid->addWidget(crearCampo(this, "Nombre Completo *", "(Solo letras)", txtNombre), 0, 0, 1, 2);
     grid->addWidget(crearCampo(this, "Número de Cédula *", "(Solo dígitos)", txtCedula), 1, 0);
     grid->addWidget(crearCampo(this, "Número de Teléfono *", "(Solo números)", txtTelefono), 1, 1);
@@ -206,8 +222,8 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     grid->setColumnStretch(1, 1);
 
     QVBoxLayout* layoutTarjeta = new QVBoxLayout(tarjeta);
-    layoutTarjeta->setContentsMargins(28, 24, 28, 24);
-    layoutTarjeta->setSpacing(14);
+    layoutTarjeta->setContentsMargins(24, 16, 24, 16);
+    layoutTarjeta->setSpacing(10);
     layoutTarjeta->addWidget(lblError);
     layoutTarjeta->addLayout(grid);
     layoutTarjeta->addSpacing(6);
@@ -215,26 +231,31 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
 
     // ----- Ventana completa -----
     QVBoxLayout* layoutPrincipal = new QVBoxLayout(this);
-    layoutPrincipal->setContentsMargins(35, 28, 35, 32);
+    layoutPrincipal->setContentsMargins(30, 18, 30, 20);
     layoutPrincipal->setSpacing(4);
     layoutPrincipal->addWidget(lblTitulo);
     layoutPrincipal->addWidget(lblSubtitulo);
-    layoutPrincipal->addSpacing(16);
+    layoutPrincipal->addSpacing(12);
     layoutPrincipal->addWidget(tarjeta);
     setLayout(layoutPrincipal);
 
     // Hoja de estilos (colores y formas)
     setStyleSheet(R"(
-        RegistroUsuarioDialog { background-color: #fff8ee; }
+        RegistroUsuarioDialog { background-color: #fff8ee; border: 1px solid #f0d9b5; border-radius: 14px; }
         QWidget { font-family: "Segoe UI"; font-size: 14px; color: #3b2a1a; }
         QLabel { background: transparent; }
         QLabel#lblTituloRegistro { font-size: 24px; font-weight: bold; color: #d35400; }
         QLabel#lblSubtituloRegistro { font-size: 14px; color: #8a7560; }
         QFrame#tarjetaRegistro { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 14px; }
-        QLabel#lblError { background-color: #fdecea; color: #c0392b; border: 1px solid #e6a59c; border-radius: 8px; padding: 10px; }
-        QLineEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 9px; }
+        QLabel#lblError { background-color: #fffaf3; color: #8a7560; border: 1px solid #f0d9b5; border-radius: 8px; padding: 8px 10px; }
+        QLabel#lblError[hayError="true"] { background-color: #fdecea; color: #c0392b; border: 1px solid #e6a59c; }
+        QLineEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 7px 9px; }
         QLineEdit:focus { border: 2px solid #e67e22; }
-        QComboBox { min-height: 24px; }
+        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; }
+        QComboBox:focus { border: 2px solid #e67e22; }
+        QComboBox::drop-down { border: none; width: 30px; }
+        QComboBox::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
+        QComboBox QAbstractItemView { background-color: #ffffff; border: 1px solid #e0c9a6; selection-background-color: #fff3e0; selection-color: #3b2a1a; }
         QPushButton#btnCancelar { background-color: #ffffff; color: #7a6650; border: 1px solid #e0c9a6; border-radius: 8px; padding: 10px 22px; font-weight: bold; }
         QPushButton#btnCancelar:hover { background-color: #fffaf3; border: 1px solid #e67e22; }
         QPushButton#btnConfirmar { background-color: #e67e22; color: #ffffff; border: none; border-radius: 8px; padding: 10px 26px; font-weight: bold; }
@@ -294,14 +315,23 @@ bool RegistroUsuarioDialog::validarFormulario()
 
     if (!error.isEmpty())
     {
-        lblError->setText("⚠️ " + error);
-        lblError->show();
+        mostrarAviso(lblError, "⚠️ " + error, true);
         return false;
     }
 
-    lblError->hide();
+    mostrarAviso(lblError, AVISO_NORMAL, false);
     return true;
 }
+
+// ---------------- Eventos ----------------
+
+void RegistroUsuarioDialog::showEvent(QShowEvent* evento)
+{
+    QDialog::showEvent(evento);
+    txtNombre->setFocus();
+}
+
+// ---------------- Métodos privados ----------------
 
 void RegistroUsuarioDialog::onBotonConfirmarClicked()
 {
@@ -345,7 +375,6 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
     }
     else
     {
-        lblError->setText("No se pudo guardar el usuario. Intente de nuevo.");
-        lblError->show();
+        mostrarAviso(lblError, "⚠️ No se pudo guardar el usuario. Intente de nuevo.", true);
     }
 }

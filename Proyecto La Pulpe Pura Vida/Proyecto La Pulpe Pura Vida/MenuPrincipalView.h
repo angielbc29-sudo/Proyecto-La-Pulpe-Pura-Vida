@@ -3,10 +3,13 @@
 #include <memory>
 #include <QDialog>
 
+#include "UsuarioJsonRepository.h"
+
 class QGridLayout;
 class QKeyEvent;
 class QLabel;
 class QPushButton;
+class QStackedWidget;
 class Usuario;
 
 // Vista del menú principal (se muestra después de iniciar sesión)
@@ -16,6 +19,8 @@ class MenuPrincipalView : public QDialog
 
 private:
     std::shared_ptr<Usuario> usuarioActivo;
+
+    UsuarioJsonRepository repoUsuarios;   // de aquí lee la pantalla de gestión de usuarios
 
     // Elementos de la interfaz (se crean por código, sin archivo .ui)
     QLabel* lblIniciales;
@@ -29,6 +34,10 @@ private:
     QPushButton* btnComprobantes;
     QPushButton* btnUsuarios;
     QPushButton* btnCerrarSesion;
+
+    // Debajo de la cabecera se muestra una sola "página" a la vez:
+    // la 0 es el menú con las tarjetas y las demás son los módulos que se abren aquí mismo
+    QStackedWidget* paginas;
 
     void configurarVistaSegunRol();
     void abrirModulo(int idModulo);

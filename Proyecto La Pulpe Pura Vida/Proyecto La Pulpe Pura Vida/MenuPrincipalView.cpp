@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStackedWidget>
 #include <QVBoxLayout>
 
 #include "Permiso.h"
@@ -15,6 +16,8 @@
 
 #include "VentanaInventario.h"
 #include "GestorInventario.h"
+#include "UsuarioJsonRepository.h"
+#include "GestionUsuariosView.h"
 
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
@@ -61,7 +64,7 @@ namespace
 // ---------------- Constructor ----------------
 
 MenuPrincipalView::MenuPrincipalView(QWidget* parent)
-    : QDialog(parent)
+    : QDialog(parent), repoUsuarios("usuarios.json")
 {
     // Se obtiene el usuario que inició sesión
     this->usuarioActivo = Sesion::getInstancia().getUsuarioActual();
@@ -153,12 +156,16 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
     layoutCuerpo->addLayout(gridModulos);
     layoutCuerpo->addStretch();
 
+    // ----- Páginas (el menú es la primera; los módulos se agregan al abrirlos) -----
+    paginas = new QStackedWidget(this);
+    paginas->addWidget(cuerpo);
+
     // ----- Ventana completa -----
     QVBoxLayout* layoutPrincipal = new QVBoxLayout(this);
     layoutPrincipal->setContentsMargins(0, 0, 0, 0);
     layoutPrincipal->setSpacing(0);
     layoutPrincipal->addWidget(cabecera);
-    layoutPrincipal->addWidget(cuerpo, 1);
+    layoutPrincipal->addWidget(paginas, 1);
     setLayout(layoutPrincipal);
 
     setMinimumSize(900, 600);
@@ -297,8 +304,22 @@ void MenuPrincipalView::abrirModulo(int idModulo)
         QMessageBox::information(this, "Módulo", "Aquí se abrirá Comprobantes e historial");
         break;
     case 4:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Usuarios y permisos");
-        break;
+    {
+        // Pantalla con la tabla de usuarios (se lee del mismo usuarios.json del login).
+        // Se abre dentro de esta misma ventana, en lugar de las tarjetas del menú.
+        GestionUsuariosView* vista = new GestionUsuariosView(&repoUsuarios, paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+
+        // Al tocar "← Menú Principal" se vuelve a las tarjetas y la pantalla se elimina
+        connect(vista, &GestionUsuariosView::volverAlMenu, this, [this, vista]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();   // se borra después del clic, no mientras se usa el botón
+            });
+    }
+    break;
     default:
         break;
     }

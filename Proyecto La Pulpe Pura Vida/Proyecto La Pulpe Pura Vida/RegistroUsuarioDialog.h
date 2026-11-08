@@ -35,6 +35,10 @@ private:
 private slots:
     void onBotonConfirmarClicked();
 
+protected:
+    // Al aparecer, el cursor queda listo en "Nombre Completo"
+    void showEvent(QShowEvent* evento) override;
+
 public:
     explicit RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* parent = nullptr);
 };

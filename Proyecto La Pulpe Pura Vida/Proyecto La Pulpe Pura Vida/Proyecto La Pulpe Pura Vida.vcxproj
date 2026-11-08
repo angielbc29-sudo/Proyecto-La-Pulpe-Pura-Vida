@@ -106,6 +106,7 @@
     <QtUic Include="ProyectoLaPulpePuraVida.ui" />
     <QtMoc Include="ProyectoLaPulpePuraVida.h" />
     <QtMoc Include="MenuPrincipalView.h" />
+    <ClCompile Include="GestionUsuariosView.cpp" />
     <ClCompile Include="GestorInventario.cpp" />
     <ClCompile Include="LoginDialog.cpp" />
     <ClCompile Include="Producto.cpp" />
@@ -123,6 +124,7 @@
     <ClCompile Include="UsuarioJsonRepository.cpp" />
     <ClCompile Include="VentanaInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
+    <QtMoc Include="GestionUsuariosView.h" />
     <ClInclude Include="Linea.h" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
