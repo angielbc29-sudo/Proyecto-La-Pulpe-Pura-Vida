@@ -1,15 +1,16 @@
 #pragma once
 
 #include <memory>
-#include <QWidget>
+#include <QDialog>
 
 class QGridLayout;
+class QKeyEvent;
 class QLabel;
 class QPushButton;
 class Usuario;
 
 // Vista del menú principal (se muestra después de iniciar sesión)
-class MenuPrincipalView : public QWidget
+class MenuPrincipalView : public QDialog
 {
     Q_OBJECT
 
@@ -34,6 +35,10 @@ private:
 
 private slots:
     void onBotonCerrarSesionClicked();
+
+protected:
+    // Evita que la tecla Esc cierre el menú (y con eso todo el programa)
+    void keyPressEvent(QKeyEvent* evento) override;
 
 public:
     // Se puede llamar como MenuPrincipalView(); el parent es opcional

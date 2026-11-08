@@ -3,16 +3,16 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 
-// Constructor 
+// ---------------- Constructor ----------------
 
-ServicioAutentication::ServicioAutentication(IUsuarioRepository* repo)
+ServicioAutenticacion::ServicioAutenticacion(IUsuarioRepository* repo)
 {
     this->repo = repo;
 }
 
-//  Métodos 
+// ---------------- Métodos ----------------
 
-ResultadoLogin ServicioAutentication::autenticar(std::string user, std::string passPlano,
+ResultadoLogin ServicioAutenticacion::autenticar(std::string user, std::string passPlano,
     std::shared_ptr<Usuario>& usuarioOut)
 {
     usuarioOut = nullptr;
@@ -41,7 +41,7 @@ ResultadoLogin ServicioAutentication::autenticar(std::string user, std::string p
     return ResultadoLogin::EXITOSO;
 }
 
-bool ServicioAutentication::verificarHash(std::string passPlano, std::string hashGuardado)
+bool ServicioAutenticacion::verificarHash(std::string passPlano, std::string hashGuardado)
 {
     // Se cifra la contraseña escrita con SHA-256 y se pasa a texto hexadecimal
     QByteArray hash = QCryptographicHash::hash(

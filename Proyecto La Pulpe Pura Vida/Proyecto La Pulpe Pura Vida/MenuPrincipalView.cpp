@@ -1,7 +1,9 @@
 #include "MenuPrincipalView.h"
 
+#include <QApplication>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
@@ -59,7 +61,7 @@ namespace
 // ---------------- Constructor ----------------
 
 MenuPrincipalView::MenuPrincipalView(QWidget* parent)
-    : QWidget(parent)
+    : QDialog(parent)
 {
     // Se obtiene el usuario que inició sesión
     this->usuarioActivo = Sesion::getInstancia().getUsuarioActual();
@@ -69,6 +71,7 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
 
     setWindowTitle("La Pulpe Pura Vida - Menú principal");
     setAttribute(Qt::WA_StyledBackground, true);
+    setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);   // botones de minimizar y maximizar
 
     // ----- Cabecera -----
     QWidget* cabecera = new QWidget(this);
@@ -303,6 +306,29 @@ void MenuPrincipalView::abrirModulo(int idModulo)
 
 void MenuPrincipalView::onBotonCerrarSesionClicked()
 {
+    // Se cierran las ventanas de los demás módulos que sigan abiertas (por ejemplo, Inventario)
+    const QWidgetList ventanas = QApplication::topLevelWidgets();
+    for (QWidget* ventana : ventanas)
+    {
+        if (ventana != this)
+        {
+            ventana->close();
+        }
+    }
+
     Sesion::getInstancia().cerrar();
-    close();
+    accept();   // cierra el menú con resultado "aceptado": main vuelve a mostrar el login
+}
+
+// ---------------- Eventos ----------------
+
+void MenuPrincipalView::keyPressEvent(QKeyEvent* evento)
+{
+    // En un QDialog, Esc cierra la ventana; en el menú se ignora
+    if (evento->key() == Qt::Key_Escape)
+    {
+        return;
+    }
+
+    QDialog::keyPressEvent(evento);
 }
