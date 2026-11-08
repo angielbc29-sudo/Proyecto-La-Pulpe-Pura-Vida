@@ -1,15 +1,23 @@
 #include "MenuPrincipalView.h"
 
+#include <QApplication>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStackedWidget>
 #include <QVBoxLayout>
 
 #include "Permiso.h"
 #include "Sesion.h"
 #include "Usuario.h"
+
+#include "VentanaInventario.h"
+#include "GestorInventario.h"
+#include "UsuarioJsonRepository.h"
+#include "GestionUsuariosView.h"
 
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
@@ -56,7 +64,7 @@ namespace
 // ---------------- Constructor ----------------
 
 MenuPrincipalView::MenuPrincipalView(QWidget* parent)
-    : QWidget(parent)
+    : QDialog(parent), repoUsuarios("usuarios.json")
 {
     // Se obtiene el usuario que inició sesión
     this->usuarioActivo = Sesion::getInstancia().getUsuarioActual();
@@ -66,6 +74,7 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
 
     setWindowTitle("La Pulpe Pura Vida - Menú principal");
     setAttribute(Qt::WA_StyledBackground, true);
+    setWindowFlags(windowFlags() | Qt::WindowMinMaxButtonsHint);   // botones de minimizar y maximizar
 
     // ----- Cabecera -----
     QWidget* cabecera = new QWidget(this);
@@ -147,12 +156,16 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
     layoutCuerpo->addLayout(gridModulos);
     layoutCuerpo->addStretch();
 
+    // ----- Páginas (el menú es la primera; los módulos se agregan al abrirlos) -----
+    paginas = new QStackedWidget(this);
+    paginas->addWidget(cuerpo);
+
     // ----- Ventana completa -----
     QVBoxLayout* layoutPrincipal = new QVBoxLayout(this);
     layoutPrincipal->setContentsMargins(0, 0, 0, 0);
     layoutPrincipal->setSpacing(0);
     layoutPrincipal->addWidget(cabecera);
-    layoutPrincipal->addWidget(cuerpo, 1);
+    layoutPrincipal->addWidget(paginas, 1);
     setLayout(layoutPrincipal);
 
     setMinimumSize(900, 600);
@@ -274,8 +287,16 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     switch (idModulo)
     {
     case 1:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Productos e inventario");
-        break;
+    {
+        // Creamos la bodega, cargamos los datos guardados y abrimos tu ventana
+        // Creamos la bodega dinámicamente y abrimos la ventana
+        GestorInventario* gestor = new GestorInventario();
+        gestor->cargarDesdeArchivo("productos.json");
+        VentanaInventario* ventana = new VentanaInventario(gestor);
+        ventana->setAttribute(Qt::WA_DeleteOnClose);
+        ventana->show();
+    }
+    break;
     case 2:
         QMessageBox::information(this, "Módulo", "Aquí se abrirá Ventas y cobro");
         break;
@@ -283,8 +304,22 @@ void MenuPrincipalView::abrirModulo(int idModulo)
         QMessageBox::information(this, "Módulo", "Aquí se abrirá Comprobantes e historial");
         break;
     case 4:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Usuarios y permisos");
-        break;
+    {
+        // Pantalla con la tabla de usuarios (se lee del mismo usuarios.json del login).
+        // Se abre dentro de esta misma ventana, en lugar de las tarjetas del menú.
+        GestionUsuariosView* vista = new GestionUsuariosView(&repoUsuarios, paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+
+        // Al tocar "← Menú Principal" se vuelve a las tarjetas y la pantalla se elimina
+        connect(vista, &GestionUsuariosView::volverAlMenu, this, [this, vista]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();   // se borra después del clic, no mientras se usa el botón
+            });
+    }
+    break;
     default:
         break;
     }
@@ -292,6 +327,29 @@ void MenuPrincipalView::abrirModulo(int idModulo)
 
 void MenuPrincipalView::onBotonCerrarSesionClicked()
 {
+    // Se cierran las ventanas de los demás módulos que sigan abiertas (por ejemplo, Inventario)
+    const QWidgetList ventanas = QApplication::topLevelWidgets();
+    for (QWidget* ventana : ventanas)
+    {
+        if (ventana != this)
+        {
+            ventana->close();
+        }
+    }
+
     Sesion::getInstancia().cerrar();
-    close();
+    accept();   // cierra el menú con resultado "aceptado": main vuelve a mostrar el login
+}
+
+// ---------------- Eventos ----------------
+
+void MenuPrincipalView::keyPressEvent(QKeyEvent* evento)
+{
+    // En un QDialog, Esc cierra la ventana; en el menú se ignora
+    if (evento->key() == Qt::Key_Escape)
+    {
+        return;
+    }
+
+    QDialog::keyPressEvent(evento);
 }

@@ -10,7 +10,7 @@
 #include "Cajero.h"
 #include "Turno.h"
 
-//  Funciones auxiliares (solo se usan en este archivo) 
+// ---------------- Funciones auxiliares (solo se usan en este archivo) ----------------
 
 namespace
 {
@@ -38,7 +38,7 @@ namespace
     }
 }
 
-// Constructor 
+// ---------------- Constructor ----------------
 
 UsuarioJsonRepository::UsuarioJsonRepository(std::string ruta)
 {
@@ -50,10 +50,10 @@ UsuarioJsonRepository::UsuarioJsonRepository(std::string ruta)
         std::vector<std::shared_ptr<Usuario>> iniciales;
 
         iniciales.push_back(std::make_shared<Administrador>(
-            1, "carlosm", HASH_PRUEBA, "Carlos Mendoza", "1-1111-1111", "8888-1111", true));
+            1, "carlosm", HASH_PRUEBA, "Carlos Mora", "1-1111-1111", "8888-1111", true));
 
         iniciales.push_back(std::make_shared<Cajero>(
-            2, "anamaria", HASH_PRUEBA, "Ana María Gómez", "2-2222-2222", "8888-2222", true, Turno::MANANA));
+            2, "anamaria", HASH_PRUEBA, "Ana Maria Solis", "2-2222-2222", "8888-2222", true, Turno::MANANA));
 
         // Pedro tiene la cuenta inactiva (para probar el mensaje de acceso denegado)
         iniciales.push_back(std::make_shared<Cajero>(
@@ -63,7 +63,7 @@ UsuarioJsonRepository::UsuarioJsonRepository(std::string ruta)
     }
 }
 
-// Métodos públicos (contrato de IUsuarioRepository) 
+// ---------------- Métodos públicos (contrato de IUsuarioRepository) ----------------
 
 std::vector<std::shared_ptr<Usuario>> UsuarioJsonRepository::obtenerTodos()
 {
@@ -117,7 +117,7 @@ bool UsuarioJsonRepository::actualizar(std::shared_ptr<Usuario> u)
     return false;   // no se encontró ese id
 }
 
-// Métodos privados
+// ---------------- Métodos privados ----------------
 
 bool UsuarioJsonRepository::serializar(std::vector<std::shared_ptr<Usuario>> lista)
 {

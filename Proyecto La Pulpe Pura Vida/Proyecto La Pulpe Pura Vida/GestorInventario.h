@@ -20,6 +20,10 @@ public:
 	bool actualizarProducto(const std::string& codigo, const std::string& nombre, double precio);
 	bool cambiarEstado(const std::string& codigo, bool activo);
 
+	// Persistencia (guardar y cargar en disco)
+	bool guardarEnArchivo(const std::string& ruta = "productos.json");
+	bool cargarDesdeArchivo(const std::string& ruta = "productos.json");
+
 	//Metodos de conexion para ventas
 
 	bool verificarDisponibilidad(const std::string& codigo, int cantidad);
