@@ -18,6 +18,8 @@ class VentanaInventario : public QWidget {
 
 private:
     GestorInventario* gestor;
+    bool soloReposicion;
+    QString textoBusqueda;
 
     // Métricas superiores
     QLabel* lblTotalUnidades;
@@ -25,7 +27,16 @@ private:
     QLabel* lblValorTotal;
     QLabel* lblTextoAlerta;
 
-    // Contenedor de la cuadrícula de tarjetas
+    // Filtros y búsqueda
+    QLineEdit* txtBuscador;
+    QPushButton* btnFiltroTodos;
+    QPushButton* btnFiltroReposicion;
+    QPushButton* btnVerReposicionBanner;
+
+    // Pie de página
+    QLabel* lblResumenPie;
+
+    // Cuadrícula del estante
     QWidget* contenedorCards;
     QGridLayout* gridProductos;
 
@@ -40,5 +51,8 @@ public:
 public slots:
     void actualizarVista();
     void abrirModalNuevoProducto();
-    void guardarCambiosEnDisco();
+    void abrirModalDetalleProducto(const std::string& codigo);
+    void filtrarPorTexto(const QString& texto);
+    void setFiltroTodos();
+    void setFiltroReposicion();
 };
