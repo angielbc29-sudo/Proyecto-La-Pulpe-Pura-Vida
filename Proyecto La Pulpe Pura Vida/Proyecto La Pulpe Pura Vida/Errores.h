@@ -1,6 +1,6 @@
 #pragma once
 #include <stdexcept>
-#include <Qstring>
+#include <QString>
 
 class ErrorHistorial : public std::runtime_error {
 public:

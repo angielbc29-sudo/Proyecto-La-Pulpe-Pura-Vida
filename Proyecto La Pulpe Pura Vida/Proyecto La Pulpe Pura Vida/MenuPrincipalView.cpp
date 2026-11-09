@@ -10,10 +10,16 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 
+#include <exception>
+#include <memory>
+
 #include "Permiso.h"
 #include "Sesion.h"
 #include "Usuario.h"
 
+#include "AlmacenJson.h"
+#include "Historial.h"
+#include "VentanaHistorial.h"
 #include "VentanaInventario.h"
 #include "GestorInventario.h"
 #include "UsuarioJsonRepository.h"
@@ -301,8 +307,31 @@ void MenuPrincipalView::abrirModulo(int idModulo)
         QMessageBox::information(this, "Módulo", "Aquí se abrirá Ventas y cobro");
         break;
     case 3:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Comprobantes e historial");
-        break;
+    {
+        std::shared_ptr<Historial> historial;
+
+        try
+        {
+            historial = std::make_shared<Historial>(
+                std::make_shared<AlmacenJson>("ventas.json"));
+        }
+        catch (const std::exception&)
+        {
+            historial.reset();
+        }
+
+        VentanaHistorial* vista = new VentanaHistorial(historial, paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+
+        connect(vista, &VentanaHistorial::volverAlMenu, this, [this, vista]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();
+            });
+    }
+    break;
     case 4:
     {
         // Pantalla con la tabla de usuarios (se lee del mismo usuarios.json del login).

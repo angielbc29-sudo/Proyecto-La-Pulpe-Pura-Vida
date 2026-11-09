@@ -108,6 +108,8 @@
     <QtMoc Include="MenuPrincipalView.h" />
     <ClCompile Include="GestionUsuariosView.cpp" />
     <ClCompile Include="GestorInventario.cpp" />
+    <ClCompile Include="Historial.cpp" />
+    <ClCompile Include="VentanaHistorial.cpp" />
     <ClCompile Include="LoginDialog.cpp" />
     <ClCompile Include="Producto.cpp" />
     <ClCompile Include="Administrador.cpp" />
@@ -125,8 +127,10 @@
     <ClCompile Include="VentanaInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
     <QtMoc Include="GestionUsuariosView.h" />
+    <QtMoc Include="VentanaHistorial.h" />
     <ClInclude Include="Carrito.h" />
     <ClInclude Include="ControladorVentas.h" />
+    <ClInclude Include="Historial.h" />
     <ClInclude Include="Linea.h" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />
