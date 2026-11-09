@@ -125,6 +125,8 @@
     <ClCompile Include="VentanaInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
     <QtMoc Include="GestionUsuariosView.h" />
+    <ClInclude Include="Carrito.h" />
+    <ClInclude Include="ControladorVentas.h" />
     <ClInclude Include="Linea.h" />
     <ClCompile Include="ComprobantesHistorial.cpp" />
     <ClCompile Include="UsuariosPermisos.cpp" />

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "Producto.h"
+#include "Linea.h"
 
 //Carrito: Representa el carrito de compras, que contiene una lista de líneas de venta.
 // Proporciona métodos para agregar, quitar y vaciar productos, así como para calcular el subtotal, IVA y total de la compra.
@@ -17,11 +18,11 @@ public:
     double subtotal() const;
     double iva() const;
     double total() const;
-    const std::vector<LineaVenta>& lineas() const;
+    const std::vector<Linea>& lineas() const;
 
 private:
     int buscarIndice(const std::string& codigo) const;
 
-    std::vector<LineaVenta> lineas_;
+    std::vector<Linea> lineas_;
 };
 
