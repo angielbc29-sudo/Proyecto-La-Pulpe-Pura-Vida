@@ -7,9 +7,9 @@ class Linea
 public:
 	Linea() = default;
 
-	Linea(const QString& codigo = "", const QString& nombre, int cantidad, double precio)
+	Linea(const QString& nombre, int cantidad, double precio, const QString& codigo = "")
 		: nombre_(nombre), cantidad_(cantidad), precio_(precio), codigo_(codigo)
-	{00
+	{
 	}
 
 	const QString& codigo() const { return codigo_; }
