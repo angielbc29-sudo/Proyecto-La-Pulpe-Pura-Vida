@@ -23,6 +23,7 @@ private:
 
     // Métricas superiores
     QLabel* lblTotalUnidades;
+    QLabel* lblDetalleUnidades;
     QLabel* lblTotalAgotados;
     QLabel* lblValorTotal;
     QLabel* lblTextoAlerta;

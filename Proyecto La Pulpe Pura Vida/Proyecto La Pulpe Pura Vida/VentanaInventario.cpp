@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QLocale>
+#include <QComboBox>
 
 // =====================================================
 // CONSTRUCTOR
@@ -30,8 +31,8 @@ VentanaInventario::VentanaInventario(GestorInventario* gestorCompartido, QWidget
             gestor->agregarProducto(Producto("005", "Cafe molido 500 g", "Abarrotes", 3900.0, 9));
             gestor->agregarProducto(Producto("006", "Azucar 2 kg", "Abarrotes", 2300.0, 0));             // Agotado
             gestor->agregarProducto(Producto("007", "Huevos carton de 30", "Frescos", 5200.0, 14));
-            gestor->agregarProducto(Producto("008", "Pan de caja", "Panaderia", 1800.0, 12));
             gestor->agregarProducto(Producto("009", "Atun en lata", "Enlatados", 1350.0, 16));
+            gestor->agregarProducto(Producto("010", "Pan de caja", "Panaderia", 1800.0, 12));
             gestor->guardarEnArchivo("productos.json");
         }
     }
@@ -102,7 +103,9 @@ void VentanaInventario::configurarInterfaz() {
         return card;
         };
 
-    layoutCards->addWidget(crearCardMetrica("UNIDADES DISPONIBLES", lblTotalUnidades, "en 9 productos", "#16a34a"));
+    QWidget* cardUnidades = crearCardMetrica("UNIDADES DISPONIBLES", lblTotalUnidades, "", "#16a34a");
+    lblDetalleUnidades = cardUnidades->findChildren<QLabel*>().at(2);
+    layoutCards->addWidget(cardUnidades);
     layoutCards->addWidget(crearCardMetrica("PRODUCTOS AGOTADOS", lblTotalAgotados, "necesita reposicion", "#dc2626"));
     layoutCards->addWidget(crearCardMetrica("VALOR DE MERCADERIA", lblValorTotal, "Precio de venta x existencias activas", "#1f2937"));
     layoutPrincipal->addLayout(layoutCards);
@@ -372,7 +375,7 @@ void VentanaInventario::actualizarVista() {
 
     QLayoutItem* item;
     while ((item = gridProductos->takeAt(0)) != nullptr) {
-        if (item->widget()) delete item->widget();
+        if (item->widget()) item->widget()->deleteLater();
         delete item;
     }
 
@@ -396,7 +399,7 @@ void VentanaInventario::actualizarVista() {
             nombresAgotados.append(QString::fromStdString(prod.getNombre()));
         }
         else if (prod.getStock() <= 5) {
-            nombresBajos.append(QString::fromStdString(prod.getNombre()) + " (quedan " + QString::number(prod.getStock()) + ")");
+            nombresBajos.append(QString::fromStdString(prod.getNombre()) + " quedan " + QString::number(prod.getStock()));
         }
 
         // Filtro por pestaña "Por reponer"
@@ -426,19 +429,20 @@ void VentanaInventario::actualizarVista() {
 
     // Actualizar métricas superiores
     QLocale loc(QLocale::Spanish, QLocale::CostaRica);
-    lblTotalUnidades->setText(QString::number(totalUnidades));
+    lblDetalleUnidades->setText(QString("en %1 productos").arg((int)productos.size()));
     lblTotalAgotados->setText(QString("%1").arg(agotados, 2, 10, QChar('0')));
     lblValorTotal->setText("₡" + loc.toString((int)valorTotal));
 
     // Texto de alerta de reposición
     QString aviso = "⚠️ Por reponer... ";
-    if (!nombresBajos.isEmpty()) aviso += nombresBajos.join(" / ") + " ";
     if (!nombresAgotados.isEmpty()) aviso += nombresAgotados.join(" / ") + " agotadas";
+    if (!nombresAgotados.isEmpty() && !nombresBajos.isEmpty()) aviso += " / ";
+    if (!nombresBajos.isEmpty()) aviso += nombresBajos.join(" / ");
     if (nombresBajos.isEmpty() && nombresAgotados.isEmpty()) aviso = "✅ Todas las existencias están en niveles óptimos.";
     lblTextoAlerta->setText(aviso);
 
     // Pie de página
-    lblResumenPie->setText(QString::number(renderizados) + " productos visibles — " + QString::number(totalUnidades) + " unidades en total");
+    lblResumenPie->setText(QString::number(renderizados) + " productos · " + QString::number(totalUnidades) + " unidades");
 }
 
 // =====================================================
@@ -561,7 +565,8 @@ void VentanaInventario::abrirModalNuevoProducto() {
     QFormLayout form;
     QLineEdit txtCodigo(&modal);
     QLineEdit txtNombre(&modal);
-    QLineEdit txtCategoria(&modal);
+    QComboBox cmbCategoria(&modal);
+    cmbCategoria.addItems({ "Lácteos", "Abarrotes", "Snacks y galletas", "Bebidas" });
 
     QDoubleSpinBox spinPrecio(&modal);
     spinPrecio.setRange(0.0, 1000000.0);  // ← permite 0 para que la validación lo atrape
@@ -569,20 +574,20 @@ void VentanaInventario::abrirModalNuevoProducto() {
     spinPrecio.setPrefix("₡ ");
 
     QSpinBox spinStock(&modal);
-    spinStock.setRange(0, 10000);
+    spinStock.setRange(-1000, 10000);
     spinStock.setValue(10);
     spinStock.setSuffix(" unid.");
 
     QString estiloInput = "background: white; border: 1px solid #d4c4b2; border-radius: 6px; padding: 7px;";
     txtCodigo.setStyleSheet(estiloInput);
     txtNombre.setStyleSheet(estiloInput);
-    txtCategoria.setStyleSheet(estiloInput);
+    cmbCategoria.setStyleSheet(estiloInput);
     spinPrecio.setStyleSheet(estiloInput);
     spinStock.setStyleSheet(estiloInput);
 
     form.addRow("CÓDIGO ÚNICO *:", &txtCodigo);
     form.addRow("NOMBRE DEL PRODUCTO *:", &txtNombre);
-    form.addRow("CATEGORÍA *:", &txtCategoria);
+    form.addRow("CATEGORÍA *:", &cmbCategoria);
     form.addRow("PRECIO DE VENTA *:", &spinPrecio);
     form.addRow("STOCK INICIAL *:", &spinStock);
     layout->addLayout(&form);
@@ -595,7 +600,7 @@ void VentanaInventario::abrirModalNuevoProducto() {
     connect(&btnAceptar, &QPushButton::clicked, [&]() {
         std::string cod = txtCodigo.text().trimmed().toStdString();
         std::string nom = txtNombre.text().trimmed().toStdString();
-        std::string cat = txtCategoria.text().trimmed().toStdString();
+        std::string cat = cmbCategoria.currentText().toStdString();
         double precio = spinPrecio.value();
         int stock = spinStock.value();
 
@@ -610,17 +615,27 @@ void VentanaInventario::abrirModalNuevoProducto() {
             return;
         }
 
-        if (precio <= 0.0) {
-            QMessageBox::warning(&modal, "Precio inválido", "El precio debe ser estrictamente mayor a ₡0.");
+        
+
+        Producto nuevo(cod, nom, cat, precio, stock);
+
+        if (!nuevo.validarPrecio(precio)) {
+            QMessageBox::warning(&modal, "Precio inválido", "El precio debe ser mayor a 0.");
+            return;
+        }
+        if (!nuevo.validarStock(stock)) {
+            QMessageBox::warning(&modal, "Stock inválido", "El stock no puede ser negativo.");
             return;
         }
 
-        Producto nuevo(cod, nom, cat, precio, stock);
         if (gestor->agregarProducto(nuevo)) {
             gestor->guardarEnArchivo("productos.json");
             modal.accept();
             actualizarVista();
             QMessageBox::information(this, "Éxito", "Producto registrado en el inventario.");
+        }
+        else {
+            QMessageBox::warning(&modal, "No se pudo registrar", "Revisa los datos del producto.");
         }
         });
 

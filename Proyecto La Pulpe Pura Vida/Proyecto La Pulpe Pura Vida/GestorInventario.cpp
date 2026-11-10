@@ -9,6 +9,10 @@ GestorInventario::GestorInventario() {
 
 }
 
+GestorInventario::~GestorInventario() {
+	// Destructor vacío
+}
+
 //validaciones 
 
 bool GestorInventario::validarCodigoUnico(const std::string& codigo) const {
@@ -24,6 +28,12 @@ bool GestorInventario::validarCodigoUnico(const std::string& codigo) const {
 
 bool GestorInventario::agregarProducto(const Producto& nuevo) {
 	if (!validarCodigoUnico(nuevo.getCodigo())) {
+		return false;
+	}
+	if (!nuevo.validarPrecio(nuevo.getPrecio())) {
+		return false;
+	}
+	if (!nuevo.validarStock(nuevo.getStock())) {
 		return false;
 	}
 	listaProductos.push_back(nuevo);
@@ -45,10 +55,16 @@ Producto* GestorInventario::buscarPorCodigo(const std::string& codigo) {
 
 bool GestorInventario::actualizarProducto(const std::string& codigo, const std::string& nombre, double precio) {
 	Producto* prod = buscarPorCodigo(codigo);
-	if (prod != nullptr) {
-		return prod->setPrecio(precio);
+	if (prod == nullptr || nombre.empty()) {
+		return false;
 	}
-	return false;
+	if (!prod->validarPrecio(precio)) {
+		return false;
+	}
+	bool estado = prod->getActivo();   // el constructor siempre crea activo = true
+	*prod = Producto(prod->getCodigo(), nombre, prod->getCategoria(), precio, prod->getStock());
+	prod->setActivo(estado);
+	return true;
 }
 
 //cambiar estado (borrador logico)
