@@ -295,12 +295,14 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     {
     case 1:
     {
-        // Creamos la bodega, cargamos los datos guardados y abrimos tu ventana
-        // Creamos la bodega dinámicamente y abrimos la ventana
+        // Opción B: Ocultar el menú y abrir Inventario
+        this->hide();
         GestorInventario* gestor = new GestorInventario();
         gestor->cargarDesdeArchivo("productos.json");
         VentanaInventario* ventana = new VentanaInventario(gestor);
         ventana->setAttribute(Qt::WA_DeleteOnClose);
+        // Cuando la ventana de inventario se cierre (o toquen 'Volver al Menú'), reaparece el menú principal
+        connect(ventana, &QWidget::destroyed, this, &QWidget::show);
         ventana->show();
     }
     break;

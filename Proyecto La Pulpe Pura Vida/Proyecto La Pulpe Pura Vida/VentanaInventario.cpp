@@ -4,31 +4,35 @@
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QMessageBox>
-#include <QGraphicsDropShadowEffect>
 #include <QScrollBar>
+#include <QLocale>
+#include <QComboBox>
 
 // =====================================================
 // CONSTRUCTOR
 // =====================================================
 VentanaInventario::VentanaInventario(GestorInventario* gestorCompartido, QWidget* parent)
-    : QWidget(parent), gestor(gestorCompartido)
+    : QWidget(parent), gestor(gestorCompartido), soloReposicion(false), textoBusqueda("")
 {
-    setWindowTitle("La Pulpe Pura Vida — Estante Vivo");
-    resize(1100, 720);
+    setWindowTitle("La Pulpe Pura Vida — Inventario");
+    resize(1050, 750);
 
     configurarInterfaz();
     estilizarVentana();
 
     if (gestor != nullptr) {
         gestor->cargarDesdeArchivo("productos.json");
+        // Cargamos exactamente los 9 productos oficiales del prototipo
         if (gestor->getProductosActivos().empty()) {
-            gestor->agregarProducto(Producto("001", "Leche Dos Pinos", "Lacteos", 1100.0, 15));
-            gestor->agregarProducto(Producto("002", "Arroz Tio Pelon", "Abarrotes", 1400.0, 3));
-            gestor->agregarProducto(Producto("003", "Galletas Chiky", "Snacks", 450.0, 0));
-            gestor->agregarProducto(Producto("004", "Cafe molido", "Abarrotes", 1200.0, 6));
-            gestor->agregarProducto(Producto("005", "Agua natural", "Bebidas", 300.0, 20));
-            gestor->agregarProducto(Producto("006", "Azucar blanca", "Abarrotes", 900.0, 10));
-            gestor->agregarProducto(Producto("007", "Sandwich de jamon", "Preparados", 1500.0, 10));
+            gestor->agregarProducto(Producto("001", "Arroz 1 kg", "Abarrotes", 1450.0, 24));
+            gestor->agregarProducto(Producto("002", "Frijoles negros 800 g", "Abarrotes", 1200.0, 18));
+            gestor->agregarProducto(Producto("003", "Aceite de girasol 1 L", "Abarrotes", 2650.0, 3));   // Stock bajo
+            gestor->agregarProducto(Producto("004", "Leche entera 1 L", "Lacteos", 1150.0, 30));
+            gestor->agregarProducto(Producto("005", "Cafe molido 500 g", "Abarrotes", 3900.0, 9));
+            gestor->agregarProducto(Producto("006", "Azucar 2 kg", "Abarrotes", 2300.0, 0));             // Agotado
+            gestor->agregarProducto(Producto("007", "Huevos carton de 30", "Frescos", 5200.0, 14));
+            gestor->agregarProducto(Producto("009", "Atun en lata", "Enlatados", 1350.0, 16));
+            gestor->agregarProducto(Producto("010", "Pan de caja", "Panaderia", 1800.0, 12));
             gestor->guardarEnArchivo("productos.json");
         }
     }
@@ -40,234 +44,243 @@ VentanaInventario::VentanaInventario(GestorInventario* gestorCompartido, QWidget
 // CONFIGURACIÓN DE LA INTERFAZ
 // =====================================================
 void VentanaInventario::configurarInterfaz() {
-    QHBoxLayout* layoutGeneral = new QHBoxLayout(this);
-    layoutGeneral->setContentsMargins(0, 0, 0, 0);
-    layoutGeneral->setSpacing(0);
+    QVBoxLayout* layoutPrincipal = new QVBoxLayout(this);
+    layoutPrincipal->setContentsMargins(40, 30, 40, 20);
+    layoutPrincipal->setSpacing(16);
 
-    // =====================================================
-    // 1. BARRA LATERAL IZQUIERDA (Vino tinto pulpero #872017)
-    // =====================================================
-    QFrame* sidebar = new QFrame(this);
-    sidebar->setObjectName("sidebar");
-    sidebar->setFixedWidth(230);
-    QVBoxLayout* layoutSidebar = new QVBoxLayout(sidebar);
-    layoutSidebar->setContentsMargins(20, 30, 20, 25);
-    layoutSidebar->setSpacing(15);
+    // 1. Cabecera
+    QHBoxLayout* lHeader = new QHBoxLayout();
+    QVBoxLayout* lTitulos = new QVBoxLayout();
 
-    // Logo Pulpería
-    QLabel* lblLogoIcon = new QLabel("🏪", sidebar);
-    lblLogoIcon->setStyleSheet("font-size: 38px; background: transparent;");
+    QLabel* lblTitulo = new QLabel("Inventario", this);
+    lblTitulo->setStyleSheet("font-size: 28px; font-weight: 900; color: #872017;");
 
-    QLabel* lblLogoTitulo = new QLabel("La pulpe", sidebar);
-    lblLogoTitulo->setStyleSheet("font-size: 24px; font-weight: 900; color: #ffffff; background: transparent;");
+    QLabel* lblSub = new QLabel("Tu mercaderia, de un vistazo. Haz clic en cualquier tarjeta para editar o reponer stock.", this);
+    lblSub->setStyleSheet("font-size: 13px; color: #7a6650;");
 
-    QLabel* lblLogoSub = new QLabel("pura vida", sidebar);
-    lblLogoSub->setStyleSheet("font-size: 13px; font-weight: 600; color: #f5c49b; background: transparent; margin-bottom: 25px;");
+    lTitulos->addWidget(lblTitulo);
+    lTitulos->addWidget(lblSub);
 
-    layoutSidebar->addWidget(lblLogoIcon);
-    layoutSidebar->addWidget(lblLogoTitulo);
-    layoutSidebar->addWidget(lblLogoSub);
-
-    // Botón Pestaña Activa: Inventario
-    QPushButton* btnTabInventario = new QPushButton("📖  Inventario", sidebar);
-    btnTabInventario->setObjectName("btnTabActivo");
-    btnTabInventario->setCursor(Qt::PointingHandCursor);
-    layoutSidebar->addWidget(btnTabInventario);
-
-    // Botón Volver al Menú Principal
-    QPushButton* btnVolver = new QPushButton("←  Volver al Menú", sidebar);
+    QPushButton* btnVolver = new QPushButton("← Menu Principal", this);
     btnVolver->setObjectName("btnVolver");
     btnVolver->setCursor(Qt::PointingHandCursor);
     connect(btnVolver, &QPushButton::clicked, this, &QWidget::close);
-    layoutSidebar->addWidget(btnVolver);
 
-    layoutSidebar->addStretch();
-
-    // Pie de la barra lateral
-    QLabel* lblPieSidebar = new QLabel("LP / COSTA RICA\nTodo en su lugar.", sidebar);
-    lblPieSidebar->setStyleSheet("font-size: 11px; color: #f5c49b; opacity: 0.8; background: transparent; line-height: 1.4;");
-    layoutSidebar->addWidget(lblPieSidebar);
-
-    layoutGeneral->addWidget(sidebar);
-
-    // =====================================================
-    // 2. PANEL PRINCIPAL DERECHO (Beige cálido #fff9f2)
-    // =====================================================
-    QWidget* panelPrincipal = new QWidget(this);
-    panelPrincipal->setObjectName("panelPrincipal");
-    QVBoxLayout* layoutContenido = new QVBoxLayout(panelPrincipal);
-    layoutContenido->setContentsMargins(35, 25, 35, 25);
-    layoutContenido->setSpacing(14);
-
-    // Encabezado
-    QLabel* lblTag = new QLabel("ESTANTE VIVO", panelPrincipal);
-    lblTag->setStyleSheet("font-size: 11px; font-weight: bold; color: #8a6a4f; letter-spacing: 1px;");
-
-    QHBoxLayout* lTitulos = new QHBoxLayout();
-    QLabel* lblTitulo = new QLabel("Una mirada diferente a tu inventario", panelPrincipal);
-    lblTitulo->setStyleSheet("font-size: 24px; font-weight: 900; color: #3b2a1a;");
-
-    QPushButton* btnNuevo = new QPushButton("+ Nuevo Producto", panelPrincipal);
-    btnNuevo->setObjectName("btnNuevoProducto");
+    QPushButton* btnNuevo = new QPushButton("+ Nuevo producto", this);
+    btnNuevo->setObjectName("btnNuevo");
     btnNuevo->setCursor(Qt::PointingHandCursor);
     connect(btnNuevo, &QPushButton::clicked, this, &VentanaInventario::abrirModalNuevoProducto);
 
-    lTitulos->addWidget(lblTitulo);
-    lTitulos->addStretch();
-    lTitulos->addWidget(btnNuevo);
+    lHeader->addLayout(lTitulos);
+    lHeader->addStretch();
+    lHeader->addWidget(btnVolver);
+    lHeader->addWidget(btnNuevo);
+    layoutPrincipal->addLayout(lHeader);
 
-    layoutContenido->addWidget(lblTag);
-    layoutContenido->addLayout(lTitulos);
+    // 2. Tarjetas de métricas
+    QHBoxLayout* layoutCards = new QHBoxLayout();
+    layoutCards->setSpacing(18);
 
-    // =====================================================
-    // 3. TARJETAS DE MÉTRICAS (Igual al prototipo)
-    // =====================================================
-    QHBoxLayout* layoutMetricas = new QHBoxLayout();
-    layoutMetricas->setSpacing(14);
-
-    auto crearCardMetrica = [](const QString& etiqueta, QLabel*& lblNumero, const QString& detalle, const QString& colorNum) {
-        QFrame* f = new QFrame();
-        f->setObjectName("cardMetrica");
-        QVBoxLayout* v = new QVBoxLayout(f);
-        v->setContentsMargins(16, 12, 16, 12);
+    auto crearCardMetrica = [](const QString& etiqueta, QLabel*& lblNum, const QString& detalle, const QString& colorNum) {
+        QFrame* card = new QFrame();
+        card->setObjectName("cardMetrica");
+        QVBoxLayout* v = new QVBoxLayout(card);
+        v->setContentsMargins(18, 14, 18, 14);
         v->setSpacing(2);
 
-        QLabel* lblE = new QLabel(etiqueta, f);
+        QLabel* lblE = new QLabel(etiqueta, card);
         lblE->setStyleSheet("font-size: 11px; font-weight: bold; color: #8a6a4f;");
 
-        lblNumero = new QLabel("0", f);
-        lblNumero->setStyleSheet("font-size: 28px; font-weight: 900; color: " + colorNum + ";");
+        lblNum = new QLabel("0", card);
+        lblNum->setStyleSheet("font-size: 28px; font-weight: 900; color: " + colorNum + ";");
 
-        QLabel* lblD = new QLabel(detalle, f);
+        QLabel* lblD = new QLabel(detalle, card);
         lblD->setStyleSheet("font-size: 11px; color: #8a7560;");
 
         v->addWidget(lblE);
-        v->addWidget(lblNumero);
+        v->addWidget(lblNum);
         v->addWidget(lblD);
-        return f;
+        return card;
         };
 
-    layoutMetricas->addWidget(crearCardMetrica("UNIDADES DISPONIBLES", lblTotalUnidades, "en bodega activa", "#16a34a"));
-    layoutMetricas->addWidget(crearCardMetrica("PRODUCTOS AGOTADOS", lblTotalAgotados, "necesitan reposición", "#dc2626"));
-    layoutMetricas->addWidget(crearCardMetrica("VALOR DE MERCADERÍA", lblValorTotal, "precio de venta × stock", "#3b2a1a"));
-    layoutContenido->addLayout(layoutMetricas);
+    QWidget* cardUnidades = crearCardMetrica("UNIDADES DISPONIBLES", lblTotalUnidades, "", "#16a34a");
+    lblDetalleUnidades = cardUnidades->findChildren<QLabel*>().at(2);
+    layoutCards->addWidget(cardUnidades);
+    layoutCards->addWidget(crearCardMetrica("PRODUCTOS AGOTADOS", lblTotalAgotados, "necesita reposicion", "#dc2626"));
+    layoutCards->addWidget(crearCardMetrica("VALOR DE MERCADERIA", lblValorTotal, "Precio de venta x existencias activas", "#1f2937"));
+    layoutPrincipal->addLayout(layoutCards);
 
-    // =====================================================
-    // 4. BANNER DE ALERTA DE REPOSICIÓN
-    // =====================================================
-    QFrame* banner = new QFrame(panelPrincipal);
+    // 3. Banner de reposición
+    QFrame* banner = new QFrame(this);
     banner->setObjectName("bannerAlerta");
     QHBoxLayout* lBanner = new QHBoxLayout(banner);
-    lBanner->setContentsMargins(14, 8, 14, 8);
+    lBanner->setContentsMargins(16, 10, 16, 10);
 
     lblTextoAlerta = new QLabel(banner);
-    lblTextoAlerta->setStyleSheet("font-size: 12px; font-weight: bold; color: #991b1b;");
+    lblTextoAlerta->setStyleSheet("font-size: 12px; font-weight: bold; color: #92400e;");
+
+    btnVerReposicionBanner = new QPushButton("Ver reposicion →", banner);
+    btnVerReposicionBanner->setObjectName("btnLinkReposicion");
+    btnVerReposicionBanner->setCursor(Qt::PointingHandCursor);
+    connect(btnVerReposicionBanner, &QPushButton::clicked, this, &VentanaInventario::setFiltroReposicion);
+
     lBanner->addWidget(lblTextoAlerta);
     lBanner->addStretch();
+    lBanner->addWidget(btnVerReposicionBanner);
+    layoutPrincipal->addWidget(banner);
 
-    layoutContenido->addWidget(banner);
+    // 4. Barra de búsqueda y filtros
+    QHBoxLayout* lFiltros = new QHBoxLayout();
+    txtBuscador = new QLineEdit(this);
+    txtBuscador->setPlaceholderText("🔍 Buscar por codigo o nombre...");
+    txtBuscador->setObjectName("txtBuscador");
+    connect(txtBuscador, &QLineEdit::textChanged, this, &VentanaInventario::filtrarPorTexto);
 
-    // =====================================================
-    // 5. CUADRÍCULA CON SCROLL PARA EL ESTANTE VIVO
-    // =====================================================
-    QScrollArea* scroll = new QScrollArea(panelPrincipal);
+    btnFiltroTodos = new QPushButton("Todos", this);
+    btnFiltroTodos->setObjectName("btnPestanaActiva");
+    btnFiltroTodos->setCursor(Qt::PointingHandCursor);
+    connect(btnFiltroTodos, &QPushButton::clicked, this, &VentanaInventario::setFiltroTodos);
+
+    btnFiltroReposicion = new QPushButton("Por reponer", this);
+    btnFiltroReposicion->setObjectName("btnPestanaInactiva");
+    btnFiltroReposicion->setCursor(Qt::PointingHandCursor);
+    connect(btnFiltroReposicion, &QPushButton::clicked, this, &VentanaInventario::setFiltroReposicion);
+
+    lFiltros->addWidget(txtBuscador, 1);
+    lFiltros->addSpacing(15);
+    lFiltros->addWidget(btnFiltroTodos);
+    lFiltros->addWidget(btnFiltroReposicion);
+    layoutPrincipal->addLayout(lFiltros);
+
+    // 5. Scroll del Estante
+    QScrollArea* scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
     scroll->setStyleSheet("background: transparent;");
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scroll->verticalScrollBar()->setStyleSheet(
-        "QScrollBar:vertical { width: 6px; background: transparent; }"
-        "QScrollBar::handle:vertical { background: #d4b89b; border-radius: 3px; }"
-    );
+    if (scroll->verticalScrollBar()) {
+        scroll->verticalScrollBar()->setStyleSheet(
+            "QScrollBar:vertical { width: 6px; background: transparent; }"
+            "QScrollBar::handle:vertical { background: #d4b89b; border-radius: 3px; }"
+        );
+    }
 
     contenedorCards = new QWidget();
     contenedorCards->setStyleSheet("background: transparent;");
     gridProductos = new QGridLayout(contenedorCards);
     gridProductos->setSpacing(16);
-    gridProductos->setContentsMargins(0, 10, 0, 10);
+    gridProductos->setContentsMargins(0, 8, 0, 8);
 
     scroll->setWidget(contenedorCards);
-    layoutContenido->addWidget(scroll, 1);
+    layoutPrincipal->addWidget(scroll, 1);
 
-    layoutGeneral->addWidget(panelPrincipal, 1);
+    // 6. Pie de página
+    QHBoxLayout* lPie = new QHBoxLayout();
+    lblResumenPie = new QLabel("9 productos - 126 unidades activas", this);
+    lblResumenPie->setStyleSheet("font-size: 11px; color: #8a7560;");
+
+    QLabel* lblReglaNegocio = new QLabel("Regla del Negocio: Agotado no es desactivado.", this);
+    lblReglaNegocio->setStyleSheet("font-size: 11px; font-style: italic; color: #8a7560;");
+
+    lPie->addWidget(lblResumenPie);
+    lPie->addStretch();
+    lPie->addWidget(lblReglaNegocio);
+    layoutPrincipal->addLayout(lPie);
 }
 
 // =====================================================
-// ESTILOS VISUALES GENERALES
+// ESTILOS DE LA VENTANA
 // =====================================================
 void VentanaInventario::estilizarVentana() {
     setStyleSheet(R"(
         VentanaInventario {
-            background-color: #fcf7f0;
-        }
-        QFrame#sidebar {
-            background-color: #872017;
-        }
-        QPushButton#btnTabActivo {
-            background-color: #fff9f2;
-            color: #872017;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 10px;
-            padding: 12px 18px;
-            text-align: left;
-            border: none;
+            background-color: #fdf8f2;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         QPushButton#btnVolver {
-            background-color: transparent;
-            color: #ffffff;
+            background-color: #ffffff;
+            color: #4a3424;
+            border: 1px solid #d4c4b2;
+            border-radius: 8px;
             font-size: 13px;
             font-weight: bold;
-            border: 1px solid rgba(255,255,255,0.4);
-            border-radius: 10px;
-            padding: 10px 18px;
-            text-align: left;
-            margin-top: 10px;
+            padding: 9px 16px;
         }
         QPushButton#btnVolver:hover {
-            background-color: rgba(255,255,255,0.15);
+            background-color: #f5ebe0;
         }
-        QWidget#panelPrincipal {
-            background-color: #fcf7f0;
+        QPushButton#btnNuevo {
+            background-color: #872017;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 9px 18px;
+        }
+        QPushButton#btnNuevo:hover {
+            background-color: #9e281e;
         }
         QFrame#cardMetrica {
             background-color: #ffffff;
-            border: 1px solid #ebd9c5;
+            border: 1px solid #eadbc8;
             border-radius: 12px;
         }
         QFrame#bannerAlerta {
-            background-color: #fde8e8;
-            border: 1px solid #f8b4b4;
-            border-radius: 10px;
-        }
-        QPushButton#btnNuevoProducto {
-            background-color: #872017;
-            color: white;
-            font-size: 13px;
-            font-weight: bold;
-            padding: 10px 20px;
+            background-color: #fef3c7;
+            border: 1px solid #fde68a;
             border-radius: 8px;
+        }
+        QPushButton#btnLinkReposicion {
+            background: transparent;
+            color: #92400e;
+            border: none;
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        QLineEdit#txtBuscador {
+            background-color: #ffffff;
+            border: 1px solid #d4c4b2;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: #3b2a1a;
+        }
+        QPushButton#btnPestanaActiva {
+            background-color: #872017;
+            color: #ffffff;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 7px 16px;
             border: none;
         }
-        QPushButton#btnNuevoProducto:hover {
-            background-color: #a3271c;
+        QPushButton#btnPestanaInactiva {
+            background-color: #ffffff;
+            color: #6b4f3b;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 7px 16px;
+            border: 1px solid #d4c4b2;
         }
     )");
 }
 
 // =====================================================
-// CREAR LA TARJETA VISUAL DE CADA PRODUCTO ("Estante Vivo")
+// CREAR CADA TARJETA INDIVIDUAL
 // =====================================================
 QWidget* VentanaInventario::crearCardProducto(const Producto& prod) {
     QFrame* card = new QFrame();
-    card->setFixedSize(225, 155);
+    card->setFixedSize(290, 185);
+    card->setCursor(Qt::PointingHandCursor);
 
     bool esAgotado = (prod.getStock() == 0);
     bool esBajo = (prod.getStock() > 0 && prod.getStock() <= 5);
 
-    QString estiloBorde = esAgotado ? "border: 2px dashed #e17055; background-color: #fde8e4;"
-        : "border: 1px solid #ebd2b9; background-color: #faebd7;";
+    QString estiloBorde = esAgotado
+        ? "border: 2px dashed #f87171; background-color: #fff1f2;"
+        : "border: 1px solid #eadbc8; background-color: #ffffff;";
 
     card->setStyleSheet(QString(
         "QFrame {"
@@ -282,66 +295,87 @@ QWidget* VentanaInventario::crearCardProducto(const Producto& prod) {
 
     QVBoxLayout* v = new QVBoxLayout(card);
     v->setContentsMargins(14, 12, 14, 12);
-    v->setSpacing(4);
+    v->setSpacing(3);
 
-    // Fila superior: Codigo y Categoria
+    // Fila superior: Código y botón "Reponer/Editar"
     QHBoxLayout* filaTop = new QHBoxLayout();
     QLabel* lblCod = new QLabel(QString::fromStdString(prod.getCodigo()), card);
-    lblCod->setStyleSheet("font-size: 11px; font-weight: bold; color: #7f5539;");
+    lblCod->setStyleSheet("font-size: 11px; font-weight: bold; color: #8a7560;");
 
-    QLabel* lblCat = new QLabel(QString::fromStdString(prod.getCategoria()), card);
-    lblCat->setStyleSheet("font-size: 11px; color: #8d6b4f;");
+    QLabel* lblEditar = new QLabel("✏️ Reponer/Editar", card);
+    lblEditar->setStyleSheet("font-size: 11px; font-weight: bold; color: #b45309;");
 
     filaTop->addWidget(lblCod);
     filaTop->addStretch();
-    filaTop->addWidget(lblCat);
+    filaTop->addWidget(lblEditar);
     v->addLayout(filaTop);
 
-    // Nombre del producto (GRANDE Y NÍTIDO)
+    // Ilustración simbólica del producto en el centro
+    QLabel* lblGrafico = new QLabel(card);
+    lblGrafico->setAlignment(Qt::AlignCenter);
+    lblGrafico->setFixedHeight(46);
+    if (esAgotado) {
+        lblGrafico->setText("AGOTADO");
+        lblGrafico->setStyleSheet("background-color: #fee2e2; color: #991b1b; font-weight: bold; font-size: 11px; border: 1px solid #f87171; border-radius: 6px; padding: 4px 10px;");
+    }
+    else {
+        QString textoCaja = QString::fromStdString(prod.getNombre()).toUpper().left(10);
+        lblGrafico->setText(textoCaja);
+        lblGrafico->setStyleSheet("background-color: #fdf8f2; color: #2b1810; font-weight: bold; font-size: 10px; border: 1px solid #2b1810; border-radius: 6px; padding: 4px 12px;");
+    }
+    v->addWidget(lblGrafico, 0, Qt::AlignCenter);
+
+    // Nombre y categoría
     QLabel* lblNom = new QLabel(QString::fromStdString(prod.getNombre()), card);
-    lblNom->setStyleSheet("font-size: 14px; font-weight: bold; color: #2b1810;");
+    lblNom->setStyleSheet("font-size: 14px; font-weight: bold; color: #1f2937; margin-top: 4px;");
     lblNom->setWordWrap(true);
+
+    QLabel* lblCat = new QLabel(QString::fromStdString(prod.getCategoria()), card);
+    lblCat->setStyleSheet("font-size: 11px; color: #6b7280;");
+
     v->addWidget(lblNom);
-
-    // Precio en colones
-    QLocale loc(QLocale::Spanish, QLocale::CostaRica);
-    QString precioFormateado = "₡ " + loc.toString((int)prod.getPrecio());
-    QLabel* lblPrecio = new QLabel(precioFormateado, card);
-    lblPrecio->setStyleSheet("font-size: 15px; font-weight: 900; color: #872017; margin-top: 2px;");
-    v->addWidget(lblPrecio);
-
+    v->addWidget(lblCat);
     v->addStretch();
 
-    // Fila inferior: Existencias y Estado
+    // Fila inferior: Precio y Estado
     QHBoxLayout* filaBot = new QHBoxLayout();
-    QString textoStock = QString::number(prod.getStock()) + " unid.";
-    QString textoEstado = esAgotado ? "● Agotado" : (esBajo ? "● Stock bajo" : "● Disponible");
-    QString colorEstado = esAgotado ? "#c0392b" : (esBajo ? "#d35400" : "#27ae60");
+    QLocale loc(QLocale::Spanish, QLocale::CostaRica);
+    QLabel* lblPrecio = new QLabel("₡ " + loc.toString((int)prod.getPrecio()), card);
+    lblPrecio->setStyleSheet("font-size: 15px; font-weight: 900; color: #111827;");
 
-    QLabel* lblStock = new QLabel(textoStock, card);
-    lblStock->setStyleSheet("font-size: 12px; font-weight: bold; color: #2b1810;");
+    QString txtEstado = esAgotado ? "0 unid.  ● Agotado" : (esBajo ? QString::number(prod.getStock()) + " unid.  ● Stock bajo" : QString::number(prod.getStock()) + " unid.  ● Disponible");
+    QString colEstado = esAgotado ? "#dc2626" : (esBajo ? "#d97706" : "#16a34a");
 
-    QLabel* lblPunto = new QLabel(textoEstado, card);
-    lblPunto->setStyleSheet("font-size: 11px; font-weight: bold; color: " + colorEstado + ";");
+    QLabel* lblEstado = new QLabel(txtEstado, card);
+    lblEstado->setStyleSheet("font-size: 11px; font-weight: bold; color: " + colEstado + ";");
 
-    filaBot->addWidget(lblStock);
+    filaBot->addWidget(lblPrecio);
     filaBot->addStretch();
-    filaBot->addWidget(lblPunto);
+    filaBot->addWidget(lblEstado);
     v->addLayout(filaBot);
+
+    // Al hacer clic en cualquier parte de la tarjeta, abre el modal de edición/reposición
+    std::string codActual = prod.getCodigo();
+    QPushButton* btnTransparente = new QPushButton(card);
+    btnTransparente->setGeometry(0, 0, 290, 185);
+    btnTransparente->setStyleSheet("background: transparent; border: none;");
+    btnTransparente->setCursor(Qt::PointingHandCursor);
+    connect(btnTransparente, &QPushButton::clicked, this, [this, codActual]() {
+        abrirModalDetalleProducto(codActual);
+        });
 
     return card;
 }
 
 // =====================================================
-// ACTUALIZAR ESTANTE VIVO Y MÉTRICAS
+// ACTUALIZAR ESTANTE Y MÉTRICAS
 // =====================================================
 void VentanaInventario::actualizarVista() {
     if (gestor == nullptr) return;
 
-    // Limpiar cuadrícula anterior
     QLayoutItem* item;
     while ((item = gridProductos->takeAt(0)) != nullptr) {
-        if (item->widget()) delete item->widget();
+        if (item->widget()) item->widget()->deleteLater();
         delete item;
     }
 
@@ -354,7 +388,7 @@ void VentanaInventario::actualizarVista() {
 
     int columna = 0;
     int fila = 0;
-    int columnasMaximas = 3; // 3 tarjetas por fila como en el prototipo
+    int renderizados = 0;
 
     for (const auto& prod : productos) {
         totalUnidades += prod.getStock();
@@ -365,31 +399,146 @@ void VentanaInventario::actualizarVista() {
             nombresAgotados.append(QString::fromStdString(prod.getNombre()));
         }
         else if (prod.getStock() <= 5) {
-            nombresBajos.append(QString::fromStdString(prod.getNombre()) + " (" + QString::number(prod.getStock()) + ")");
+            nombresBajos.append(QString::fromStdString(prod.getNombre()) + " quedan " + QString::number(prod.getStock()));
+        }
+
+        // Filtro por pestaña "Por reponer"
+        if (soloReposicion && prod.getStock() > 5) {
+            continue;
+        }
+
+        // Filtro por texto en el buscador
+        if (!textoBusqueda.isEmpty()) {
+            QString cod = QString::fromStdString(prod.getCodigo()).toLower();
+            QString nom = QString::fromStdString(prod.getNombre()).toLower();
+            if (!cod.contains(textoBusqueda.toLower()) && !nom.contains(textoBusqueda.toLower())) {
+                continue;
+            }
         }
 
         QWidget* card = crearCardProducto(prod);
         gridProductos->addWidget(card, fila, columna);
+        renderizados++;
 
         columna++;
-        if (columna >= columnasMaximas) {
+        if (columna >= 3) {
             columna = 0;
             fila++;
         }
     }
 
-    // Actualizar números de las métricas
+    // Actualizar métricas superiores
     QLocale loc(QLocale::Spanish, QLocale::CostaRica);
-    lblTotalUnidades->setText(QString::number(totalUnidades) + " unid.");
+    lblDetalleUnidades->setText(QString("en %1 productos").arg((int)productos.size()));
     lblTotalAgotados->setText(QString("%1").arg(agotados, 2, 10, QChar('0')));
-    lblValorTotal->setText("₡ " + loc.toString((int)valorTotal));
+    lblValorTotal->setText("₡" + loc.toString((int)valorTotal));
 
-    // Texto de la alerta
+    // Texto de alerta de reposición
     QString aviso = "⚠️ Por reponer... ";
-    if (!nombresBajos.isEmpty()) aviso += "Poco stock: " + nombresBajos.join(", ") + ". ";
-    if (!nombresAgotados.isEmpty()) aviso += "Agotados: " + nombresAgotados.join(", ") + ".";
+    if (!nombresAgotados.isEmpty()) aviso += nombresAgotados.join(" / ") + " agotadas";
+    if (!nombresAgotados.isEmpty() && !nombresBajos.isEmpty()) aviso += " / ";
+    if (!nombresBajos.isEmpty()) aviso += nombresBajos.join(" / ");
     if (nombresBajos.isEmpty() && nombresAgotados.isEmpty()) aviso = "✅ Todas las existencias están en niveles óptimos.";
     lblTextoAlerta->setText(aviso);
+
+    // Pie de página
+    lblResumenPie->setText(QString::number(renderizados) + " productos · " + QString::number(totalUnidades) + " unidades");
+}
+
+// =====================================================
+// MODAL: REPONER O EDITAR PRODUCTO (AL TOCAR LA TARJETA)
+// =====================================================
+void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
+    Producto* prod = gestor->buscarPorCodigo(codigo);
+    if (prod == nullptr) return;
+
+    QDialog modal(this);
+    modal.setWindowTitle("Reponer / Editar Producto — La Pulpe");
+    modal.setFixedWidth(420);
+    modal.setStyleSheet("background-color: #fdf8f2; font-family: 'Segoe UI'; font-size: 13px; color: #3b2a1a;");
+
+    QVBoxLayout* layout = new QVBoxLayout(&modal);
+    layout->setContentsMargins(25, 20, 25, 20);
+    layout->setSpacing(12);
+
+    QLabel* titulo = new QLabel("Editar: " + QString::fromStdString(prod->getNombre()), &modal);
+    titulo->setStyleSheet("font-size: 18px; font-weight: 900; color: #872017;");
+    layout->addWidget(titulo);
+
+    QLabel* subtitulo = new QLabel("Código: " + QString::fromStdString(prod->getCodigo()) + " (Inmutable) | Categoría: " + QString::fromStdString(prod->getCategoria()), &modal);
+    subtitulo->setStyleSheet("color: #7a6650; font-size: 12px; margin-bottom: 8px;");
+    layout->addWidget(subtitulo);
+
+    QFormLayout form;
+
+    QDoubleSpinBox spinPrecio(&modal);
+    spinPrecio.setRange(0.0, 1000000.0);  // ← permite 0 para que la validación lo atrape
+    spinPrecio.setValue(prod->getPrecio());
+    spinPrecio.setPrefix("₡ ");
+
+    QSpinBox spinSumarStock(&modal);
+    spinSumarStock.setRange(0, 500);
+    spinSumarStock.setValue(0);
+    spinSumarStock.setSuffix(" unid.");
+
+    QLabel* lblStockActual = new QLabel(QString::number(prod->getStock()) + " unidades actualmente en bodega", &modal);
+    lblStockActual->setStyleSheet("font-weight: bold; color: #166534;");
+
+    QString estiloInput = "background: white; border: 1px solid #d4c4b2; border-radius: 6px; padding: 7px;";
+    spinPrecio.setStyleSheet(estiloInput);
+    spinSumarStock.setStyleSheet(estiloInput);
+
+    form.addRow("Stock actual:", lblStockActual);
+    form.addRow("Reponer (+ sumar stock):", &spinSumarStock);
+    form.addRow("Precio de venta *:", &spinPrecio);
+    layout->addLayout(&form);
+
+    QHBoxLayout* lBotones = new QHBoxLayout();
+
+    // Botón de Borrado Lógico
+    QPushButton btnBorradoLogico(prod->getActivo() ? "Desactivar Producto" : "Reactivar Producto", &modal);
+    btnBorradoLogico.setStyleSheet("background-color: #d97706; color: white; font-weight: bold; border-radius: 6px; padding: 10px;");
+    btnBorradoLogico.setCursor(Qt::PointingHandCursor);
+
+    QPushButton btnGuardar("Guardar cambios", &modal);
+    btnGuardar.setStyleSheet("background-color: #872017; color: white; font-weight: bold; border-radius: 6px; padding: 10px;");
+    btnGuardar.setCursor(Qt::PointingHandCursor);
+
+    lBotones->addWidget(&btnBorradoLogico);
+    lBotones->addWidget(&btnGuardar);
+    layout->addLayout(lBotones);
+
+    // Evento Guardar Reposición y Precio
+    connect(&btnGuardar, &QPushButton::clicked, [&]() {
+        double nuevoPrecio = spinPrecio.value();
+        int sumar = spinSumarStock.value();
+
+        if (nuevoPrecio <= 0.0) {
+            QMessageBox::warning(&modal, "Precio inválido", "El precio debe ser estrictamente mayor a ₡0.");
+            return;
+        }
+
+        prod->setPrecio(nuevoPrecio);
+        if (sumar > 0) {
+            prod->agregarStock(sumar);
+        }
+
+        gestor->guardarEnArchivo("productos.json");
+        actualizarVista();
+        QMessageBox::information(this, "Actualizado", "El producto se actualizó y guardó en disco.");
+        modal.accept();
+        });
+
+    // Evento Borrado Lógico
+    connect(&btnBorradoLogico, &QPushButton::clicked, [&]() {
+        bool nuevoEstado = !prod->getActivo();
+        gestor->cambiarEstado(codigo, nuevoEstado);
+        gestor->guardarEnArchivo("productos.json");
+        modal.accept();
+        actualizarVista();
+        });
+
+    modal.exec();
 }
 
 // =====================================================
@@ -399,7 +548,7 @@ void VentanaInventario::abrirModalNuevoProducto() {
     QDialog modal(this);
     modal.setWindowTitle("Nuevo Producto — La Pulpe");
     modal.setFixedWidth(420);
-    modal.setStyleSheet("background-color: #fff9f2; font-family: 'Segoe UI'; font-size: 13px; color: #3b2a1a;");
+    modal.setStyleSheet("background-color: #fdf8f2; font-family: 'Segoe UI'; font-size: 13px; color: #3b2a1a;");
 
     QVBoxLayout* layout = new QVBoxLayout(&modal);
     layout->setContentsMargins(25, 20, 25, 20);
@@ -416,26 +565,29 @@ void VentanaInventario::abrirModalNuevoProducto() {
     QFormLayout form;
     QLineEdit txtCodigo(&modal);
     QLineEdit txtNombre(&modal);
-    QLineEdit txtCategoria(&modal);
+    QComboBox cmbCategoria(&modal);
+    cmbCategoria.addItems({ "Lácteos", "Abarrotes", "Snacks y galletas", "Bebidas" });
 
     QDoubleSpinBox spinPrecio(&modal);
-    spinPrecio.setRange(1.0, 1000000.0);
+    spinPrecio.setRange(0.0, 1000000.0);  // ← permite 0 para que la validación lo atrape
+    spinPrecio.setValue(1000.0);
     spinPrecio.setPrefix("₡ ");
 
     QSpinBox spinStock(&modal);
-    spinStock.setRange(0, 10000);
+    spinStock.setRange(-1000, 10000);
+    spinStock.setValue(10);
     spinStock.setSuffix(" unid.");
 
-    QString estiloInput = "background: white; border: 1px solid #ebd9c5; border-radius: 6px; padding: 7px;";
+    QString estiloInput = "background: white; border: 1px solid #d4c4b2; border-radius: 6px; padding: 7px;";
     txtCodigo.setStyleSheet(estiloInput);
     txtNombre.setStyleSheet(estiloInput);
-    txtCategoria.setStyleSheet(estiloInput);
+    cmbCategoria.setStyleSheet(estiloInput);
     spinPrecio.setStyleSheet(estiloInput);
     spinStock.setStyleSheet(estiloInput);
 
     form.addRow("CÓDIGO ÚNICO *:", &txtCodigo);
     form.addRow("NOMBRE DEL PRODUCTO *:", &txtNombre);
-    form.addRow("CATEGORÍA *:", &txtCategoria);
+    form.addRow("CATEGORÍA *:", &cmbCategoria);
     form.addRow("PRECIO DE VENTA *:", &spinPrecio);
     form.addRow("STOCK INICIAL *:", &spinStock);
     layout->addLayout(&form);
@@ -448,25 +600,42 @@ void VentanaInventario::abrirModalNuevoProducto() {
     connect(&btnAceptar, &QPushButton::clicked, [&]() {
         std::string cod = txtCodigo.text().trimmed().toStdString();
         std::string nom = txtNombre.text().trimmed().toStdString();
-        std::string cat = txtCategoria.text().trimmed().toStdString();
+        std::string cat = cmbCategoria.currentText().toStdString();
         double precio = spinPrecio.value();
         int stock = spinStock.value();
 
+        // Validaciones rigurosas
         if (cod.empty() || nom.empty()) {
-            QMessageBox::warning(&modal, "Error", "El código y el nombre son obligatorios.");
+            QMessageBox::warning(&modal, "Campos obligatorios", "El código y el nombre no pueden quedar vacíos.");
             return;
         }
 
         if (!gestor->validarCodigoUnico(cod)) {
-            QMessageBox::warning(&modal, "Código repetido", "Ya existe un artículo con ese código.");
+            QMessageBox::warning(&modal, "Código duplicado", "Ya existe un producto registrado con ese código único.");
             return;
         }
 
+        
+
         Producto nuevo(cod, nom, cat, precio, stock);
+
+        if (!nuevo.validarPrecio(precio)) {
+            QMessageBox::warning(&modal, "Precio inválido", "El precio debe ser mayor a 0.");
+            return;
+        }
+        if (!nuevo.validarStock(stock)) {
+            QMessageBox::warning(&modal, "Stock inválido", "El stock no puede ser negativo.");
+            return;
+        }
+
         if (gestor->agregarProducto(nuevo)) {
             gestor->guardarEnArchivo("productos.json");
             modal.accept();
             actualizarVista();
+            QMessageBox::information(this, "Éxito", "Producto registrado en el inventario.");
+        }
+        else {
+            QMessageBox::warning(&modal, "No se pudo registrar", "Revisa los datos del producto.");
         }
         });
 
@@ -474,10 +643,25 @@ void VentanaInventario::abrirModalNuevoProducto() {
 }
 
 // =====================================================
-// GUARDAR EN DISCO
+// FILTROS Y BÚSQUEDA
 // =====================================================
-void VentanaInventario::guardarCambiosEnDisco() {
-    if (gestor != nullptr && gestor->guardarEnArchivo("productos.json")) {
-        QMessageBox::information(this, "Guardado exitoso", "Los productos se guardaron correctamente en productos.json.");
-    }
+void VentanaInventario::filtrarPorTexto(const QString& texto) {
+    textoBusqueda = texto;
+    actualizarVista();
+}
+
+void VentanaInventario::setFiltroTodos() {
+    soloReposicion = false;
+    btnFiltroTodos->setObjectName("btnPestanaActiva");
+    btnFiltroReposicion->setObjectName("btnPestanaInactiva");
+    estilizarVentana();
+    actualizarVista();
+}
+
+void VentanaInventario::setFiltroReposicion() {
+    soloReposicion = true;
+    btnFiltroTodos->setObjectName("btnPestanaInactiva");
+    btnFiltroReposicion->setObjectName("btnPestanaActiva");
+    estilizarVentana();
+    actualizarVista();
 }
