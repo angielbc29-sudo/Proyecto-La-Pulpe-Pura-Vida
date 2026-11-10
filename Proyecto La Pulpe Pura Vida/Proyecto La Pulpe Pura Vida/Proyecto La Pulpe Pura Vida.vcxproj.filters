@@ -91,6 +91,12 @@
     <ClCompile Include="GestionUsuariosView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Historial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VentanaHistorial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GestorInventario.h">
@@ -168,6 +174,9 @@
     <ClInclude Include="TicketTxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Historial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ProyectoLaPulpePuraVida.h">
@@ -186,6 +195,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="GestionUsuariosView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="VentanaHistorial.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
