@@ -16,7 +16,7 @@
         "stock": 3
     },
     {
-        "activo": false,
+        "activo": true,
         "categoria": "Snacks",
         "codigo": "003",
         "nombre": "Galletas Chiky",
@@ -28,7 +28,7 @@
         "categoria": "Abarrotes",
         "codigo": "004",
         "nombre": "Cafe molido",
-        "precio": 1,
+        "precio": 1200,
         "stock": 6
     },
     {
@@ -56,7 +56,7 @@
         "stock": 10
     },
     {
-        "activo": false,
+        "activo": true,
         "categoria": "kjjgjgjb",
         "codigo": "hhkpk{l{",
         "nombre": "tyguguijo",
