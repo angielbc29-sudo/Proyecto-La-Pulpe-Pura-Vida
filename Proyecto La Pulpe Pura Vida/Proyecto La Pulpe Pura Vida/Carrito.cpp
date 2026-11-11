@@ -2,6 +2,10 @@
 
 #include <QString>
 
+#include "VentasCobro.h"   // [VENTAS] tasa de IVA compartida
+
+// [VENTAS] Agrega una unidad del producto. Si ya esta en el carrito, aumenta
+// la cantidad; nunca permite superar el stock disponible.
 bool Carrito::agregar(const Producto& producto) {
     const int indice = buscarIndice(producto.getCodigo());
 
@@ -21,6 +25,7 @@ bool Carrito::agregar(const Producto& producto) {
     return true;
 }
 
+// [VENTAS] Quita una unidad de una linea; si queda en cero, elimina la linea.
 bool Carrito::quitarUnidad(const std::string& codigo) {
     const int indice = buscarIndice(codigo);
     if (indice < 0)
@@ -34,6 +39,7 @@ bool Carrito::quitarUnidad(const std::string& codigo) {
     return true;
 }
 
+// [VENTAS] Elimina la linea completa del carrito.
 bool Carrito::quitar(const std::string& codigo) {
     const int indice = buscarIndice(codigo);
     if (indice < 0)
@@ -42,6 +48,7 @@ bool Carrito::quitar(const std::string& codigo) {
     return true;
 }
 
+// [VENTAS] Deja el carrito sin ninguna linea.
 void Carrito::vaciar() {
     lineas_.clear();
 }
@@ -57,6 +64,7 @@ int Carrito::cantidadArticulos() const {
     return unidades;
 }
 
+// [VENTAS] Suma de los subtotales de las lineas, sin IVA.
 double Carrito::subtotal() const {
     double suma = 0.0;
     for (const Linea& linea : lineas_)
@@ -64,10 +72,12 @@ double Carrito::subtotal() const {
     return suma;
 }
 
+// [VENTAS] IVA del carrito usando la misma tasa que VentasCobro.
 double Carrito::iva() const {
-    return subtotal() * 0.13;
+    return subtotal() * VentasCobro::tasaIVA();
 }
 
+// [VENTAS] Total del carrito: subtotal + IVA.
 double Carrito::total() const {
     return subtotal() + iva();
 }
@@ -76,6 +86,7 @@ const std::vector<Linea>& Carrito::lineas() const {
     return lineas_;
 }
 
+// [VENTAS] Devuelve la posicion de un producto en el carrito o -1 si no existe.
 int Carrito::buscarIndice(const std::string& codigo) const {
     const QString buscado = QString::fromStdString(codigo);
     for (size_t i = 0; i < lineas_.size(); ++i)

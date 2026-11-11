@@ -23,14 +23,14 @@ class VentasWindow : public QWidget
 
 public:
     explicit VentasWindow(std::shared_ptr<Historial> historial, QWidget* parent = nullptr);
+    ~VentasWindow() override;
 
 signals:
     void volverAlMenu();
 
 private:
-    GestorInventario* inventario_;
-    ControladorVentas controlador_;
-    std::shared_ptr<Historial> historial_;
+    GestorInventario* inventario_;     // [VENTAS] Inventario cargado desde productos.json.
+    ControladorVentas controlador_;    // [VENTAS] Logica de carrito, IVA, cobro y registro.
 
     QLineEdit* txtCodigo;
     QPushButton* btnAgregar;

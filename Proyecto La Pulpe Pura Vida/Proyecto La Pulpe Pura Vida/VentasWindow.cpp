@@ -67,15 +67,13 @@ namespace
 VentasWindow::VentasWindow(std::shared_ptr<Historial> historial, QWidget* parent)
     : QWidget(parent),
     inventario_(new GestorInventario()),
-    controlador_(inventario_, cajeroActual()),
-    historial_(std::move(historial))
+    controlador_(inventario_, std::move(historial), cajeroActual())
 {
     setWindowTitle("La Pulpe Pura Vida - Ventas y Cobro");
     setAttribute(Qt::WA_StyledBackground, true);
 
+    // [VENTAS] Carga el inventario guardado y prepara la pantalla.
     inventario_->cargarDesdeArchivo("productos.json");
-    if (historial_)
-        controlador_.fijarNumeroSiguiente(historial_->cantidadVentas() + 1);
 
     construirInterfaz();
     aplicarEstilos();
@@ -90,6 +88,11 @@ VentasWindow::VentasWindow(std::shared_ptr<Historial> historial, QWidget* parent
 
     actualizarVista();
     txtCodigo->setFocus();
+}
+
+VentasWindow::~VentasWindow()
+{
+    delete inventario_;
 }
 
 // ---------------- Interfaz ----------------
@@ -255,6 +258,8 @@ void VentasWindow::aplicarEstilos()
 
 // ---------------- Estado de la pantalla ----------------
 
+// [VENTAS] Refresca la tabla del carrito, los totales (subtotal, IVA, total)
+// y el estado de los botones segun haya lineas o seleccion.
 void VentasWindow::actualizarVista()
 {
     const std::vector<Linea>& lineas = controlador_.lineasCarrito();
@@ -285,6 +290,7 @@ void VentasWindow::actualizarVista()
 
 // ---------------- Acciones del carrito ----------------
 
+// [VENTAS] Lee el codigo escrito, valida que el producto exista y lo agrega.
 void VentasWindow::agregarAlCarrito()
 {
     const QString texto = txtCodigo->text().trimmed();
@@ -315,6 +321,7 @@ void VentasWindow::agregarAlCarrito()
     txtCodigo->setFocus();
 }
 
+// [VENTAS] Devuelve la fila seleccionada de la tabla o -1 si no hay ninguna.
 int VentasWindow::filaSeleccionada() const
 {
     const int fila = tablaCarrito->currentRow();
@@ -323,12 +330,14 @@ int VentasWindow::filaSeleccionada() const
     return fila;
 }
 
+// [VENTAS] Obtiene el codigo del producto de una fila de la tabla.
 std::string VentasWindow::codigoDeFila(int fila) const
 {
     const QTableWidgetItem* item = tablaCarrito->item(fila, 0);
     return item != nullptr ? item->text().toStdString() : std::string();
 }
 
+// [VENTAS] Quita una unidad de la linea seleccionada.
 void VentasWindow::quitarUnidad()
 {
     const int fila = filaSeleccionada();
@@ -338,6 +347,7 @@ void VentasWindow::quitarUnidad()
     actualizarVista();
 }
 
+// [VENTAS] Quita la linea completa seleccionada.
 void VentasWindow::quitarProducto()
 {
     const int fila = filaSeleccionada();
@@ -347,6 +357,7 @@ void VentasWindow::quitarProducto()
     actualizarVista();
 }
 
+// [VENTAS] Pide confirmacion y vacia todo el carrito.
 void VentasWindow::vaciarCarrito()
 {
     if (controlador_.carritoVacio())
@@ -364,6 +375,8 @@ void VentasWindow::vaciarCarrito()
 
 // ---------------- Cobro ----------------
 
+// [VENTAS] Ejecuta el cobro en efectivo. El controlador valida, descuenta
+// inventario y registra la venta; aqui solo se muestra el resultado.
 void VentasWindow::cobrar()
 {
     if (controlador_.carritoVacio())
@@ -383,25 +396,7 @@ void VentasWindow::cobrar()
     actualizarVista();
     txtCodigo->setFocus();
 
-    if (historial_ == nullptr)
-    {
-        QMessageBox::warning(this, "Venta no guardada",
-            "La venta se cobró, pero no se pudo abrir ventas.json:\n"
-            "no quedará en el historial de comprobantes.");
-        return;
-    }
-
-    try
-    {
-        historial_->registrar(venta);
-    }
-    catch (const std::exception& e)
-    {
-        QMessageBox::critical(this, "Error al guardar la venta",
-            QString::fromUtf8(e.what()) + "\n\nLa venta se cobró pero no quedó registrada en el historial.");
-        return;
-    }
-
+    // [VENTAS] El controlador ya desconto el stock y registro la venta.
     QMessageBox::information(this, "Venta registrada",
         "Venta N.º " + Formato::numero(venta.numero()) + " cobrada y guardada en el historial.\n"
         "Total: " + Formato::colones(venta.total()) + "\n"
