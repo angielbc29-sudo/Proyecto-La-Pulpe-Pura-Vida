@@ -137,3 +137,6 @@ $RECYCLE.BIN/
 .env
 *.local
 config.local.*
+
+# --- Datos generados por la app (se crean solos al ejecutar) ---
+ventas.json

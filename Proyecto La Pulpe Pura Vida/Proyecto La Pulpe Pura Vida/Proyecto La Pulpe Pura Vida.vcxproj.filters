@@ -97,6 +97,15 @@
     <ClCompile Include="VentanaHistorial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Carrito.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ControladorVentas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VentasWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GestorInventario.h">
@@ -198,6 +207,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VentanaHistorial.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="VentasWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

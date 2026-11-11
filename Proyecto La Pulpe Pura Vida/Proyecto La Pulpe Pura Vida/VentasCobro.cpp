@@ -34,12 +34,25 @@ const std::vector<Linea>& VentasCobro::lineas() const
     return lineas_;
 }
 
-double VentasCobro::total() const
+// [VENTAS] Suma de los subtotales de las lineas, SIN IVA.
+double VentasCobro::subtotal() const
 {
     double resultado = 0.0;
     for (const Linea& linea : lineas_)
         resultado += linea.subtotal();
     return resultado;
+}
+
+// [VENTAS] IVA calculado sobre el subtotal (13%).
+double VentasCobro::iva() const
+{
+    return subtotal() * tasaIVA();
+}
+
+// [VENTAS] Monto total a cobrar: subtotal + IVA.
+double VentasCobro::total() const
+{
+    return subtotal() + iva();
 }
 
 double VentasCobro::pago() const
@@ -69,6 +82,8 @@ void VentasCobro::agregar(const Linea& linea)
     lineas_.push_back(linea);
 }
 
+// [VENTAS] Marca la venta como cobrada y calcula el cambio.
+// El pago debe cubrir el total, que ya incluye IVA.
 void VentasCobro::cobrar(double pago)
 {
     if (cobrada_)
