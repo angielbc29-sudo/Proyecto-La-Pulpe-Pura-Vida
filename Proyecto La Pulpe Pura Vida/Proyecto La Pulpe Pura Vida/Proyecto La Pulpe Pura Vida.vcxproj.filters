@@ -73,7 +73,7 @@
     <ClCompile Include="LoginDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ServicioAutentication.cpp">
+    <ClCompile Include="ServicioAutenticacion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AlmacenJson.cpp">
@@ -183,7 +183,7 @@
     <ClInclude Include="UsuarioJsonRepository.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ServicioAutentication.h">
+    <ClInclude Include="ServicioAutenticacion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Linea.h">

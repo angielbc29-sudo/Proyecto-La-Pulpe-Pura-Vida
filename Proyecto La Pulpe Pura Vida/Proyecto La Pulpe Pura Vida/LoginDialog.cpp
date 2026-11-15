@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QFrame>
 #include <QIcon>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPainter>
@@ -15,7 +16,7 @@
 #include <QVBoxLayout>
 
 #include "Bitacora.h"
-#include "ServicioAutentication.h"
+#include "ServicioAutenticacion.h"
 #include "Sesion.h"
 #include "Usuario.h"
 
@@ -239,4 +240,17 @@ void LoginDialog::mostrarAlertaError(ResultadoLogin resultado)
     }
 
     lblError->show();
+}
+
+// ---------------- Eventos ----------------
+
+void LoginDialog::keyPressEvent(QKeyEvent* evento)
+{
+    // En un QDialog, Esc cierra la ventana (y con eso todo el programa); en el login se ignora
+    if (evento->key() == Qt::Key_Escape)
+    {
+        return;
+    }
+
+    QDialog::keyPressEvent(evento);
 }

@@ -151,10 +151,10 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     txtNombre->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ]*"), txtNombre));   // solo letras y espacios
 
     txtCedula = new QLineEdit(this);
-    txtCedula->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"), txtCedula));       // solo dígitos
+    txtCedula->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,9}"), txtCedula));   // solo dígitos, máximo 9
 
     txtTelefono = new QLineEdit(this);
-    txtTelefono->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"), txtTelefono));   // solo dígitos
+    txtTelefono->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,8}"), txtTelefono));   // solo dígitos, máximo 8
 
     cmbRol = new QComboBox(this);
     cmbRol->addItem("Cajero");
@@ -214,8 +214,8 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     grid->setHorizontalSpacing(16);
     grid->setVerticalSpacing(8);
     grid->addWidget(crearCampo(this, "Nombre Completo *", "(Solo letras)", txtNombre), 0, 0, 1, 2);
-    grid->addWidget(crearCampo(this, "Número de Cédula *", "(Solo dígitos)", txtCedula), 1, 0);
-    grid->addWidget(crearCampo(this, "Número de Teléfono *", "(Solo números)", txtTelefono), 1, 1);
+    grid->addWidget(crearCampo(this, "Número de Cédula *", "(9 dígitos)", txtCedula), 1, 0);
+    grid->addWidget(crearCampo(this, "Número de Teléfono *", "(8 dígitos)", txtTelefono), 1, 1);
     grid->addWidget(crearCampo(this, "Rol *", "", cmbRol), 2, 0);
     grid->addWidget(campoTurno, 2, 1);
     grid->addWidget(crearCampo(this, "Nombre de Usuario deseado *", "(Sin espacios)", txtUsuario), 3, 0, 1, 2);
@@ -291,13 +291,13 @@ bool RegistroUsuarioDialog::validarFormulario()
     {
         error = "El nombre completo solo puede contener letras.";
     }
-    else if (!QRegularExpression("^[0-9]+$").match(cedula).hasMatch())
+    else if (!QRegularExpression("^[0-9]{9}$").match(cedula).hasMatch())
     {
-        error = "La cédula solo puede contener dígitos.";
+        error = "La cédula debe tener exactamente 9 dígitos.";
     }
-    else if (!QRegularExpression("^[0-9]+$").match(telefono).hasMatch())
+    else if (!QRegularExpression("^[0-9]{8}$").match(telefono).hasMatch())
     {
-        error = "El teléfono solo puede contener números.";
+        error = "El teléfono debe tener exactamente 8 dígitos.";
     }
     else if (usuario.contains(' '))
     {
@@ -355,8 +355,13 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
     }
 
     std::string nombre = txtNombre->text().trimmed().toStdString();
-    std::string cedula = txtCedula->text().trimmed().toStdString();
-    std::string telefono = txtTelefono->text().trimmed().toStdString();
+
+    // La cédula y el teléfono se guardan con guiones, igual que los usuarios que ya existen:
+    // 1-1111-1111 y 8888-1111
+    QString textoCedula = txtCedula->text().trimmed();
+    QString textoTelefono = txtTelefono->text().trimmed();
+    std::string cedula = (textoCedula.left(1) + "-" + textoCedula.mid(1, 4) + "-" + textoCedula.mid(5)).toStdString();
+    std::string telefono = (textoTelefono.left(4) + "-" + textoTelefono.mid(4)).toStdString();
     std::string usuario = txtUsuario->text().toStdString();
     std::string hash = cifrarSha256(txtPassword->text().toStdString());
 

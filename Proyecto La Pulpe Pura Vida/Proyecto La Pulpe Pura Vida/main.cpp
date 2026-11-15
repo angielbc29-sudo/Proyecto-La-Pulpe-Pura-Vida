@@ -3,7 +3,7 @@
 
 #include "LoginDialog.h"
 #include "MenuPrincipalView.h"
-#include "ServicioAutentication.h"
+#include "ServicioAutenticacion.h"
 #include "UsuarioJsonRepository.h"
 
 int main(int argc, char* argv[])

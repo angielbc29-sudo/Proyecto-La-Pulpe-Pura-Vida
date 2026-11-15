@@ -123,7 +123,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProductosInventario.cpp" />
     <ClCompile Include="RegistroUsuarioDialog.cpp" />
-    <ClCompile Include="ServicioAutentication.cpp" />
+    <ClCompile Include="ServicioAutenticacion.cpp" />
     <ClCompile Include="Sesion.cpp" />
     <ClCompile Include="Usuario.cpp" />
     <ClCompile Include="UsuarioJsonRepository.cpp" />
@@ -159,7 +159,7 @@
     <ClInclude Include="ProductosInventario.h" />
     <QtMoc Include="RegistroUsuarioDialog.h" />
     <ClInclude Include="ResultadoLogin.h" />
-    <ClInclude Include="ServicioAutentication.h" />
+    <ClInclude Include="ServicioAutenticacion.h" />
     <ClInclude Include="Sesion.h" />
     <ClInclude Include="Turno.h" />
     <ClInclude Include="Usuario.h" />
