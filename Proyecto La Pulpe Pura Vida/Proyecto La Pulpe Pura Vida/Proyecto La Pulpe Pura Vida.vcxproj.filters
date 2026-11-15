@@ -34,6 +34,9 @@
     <ClCompile Include="Auditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Bitacora.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MenuPrincipalView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -136,6 +139,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Auditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bitacora.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistroBitacora.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Permiso.h">

@@ -114,6 +114,7 @@
     <ClCompile Include="Producto.cpp" />
     <ClCompile Include="Administrador.cpp" />
     <ClCompile Include="Auditor.cpp" />
+    <ClCompile Include="Bitacora.cpp" />
     <ClCompile Include="Cajero.cpp" />
     <ClCompile Include="MenuPrincipalView.cpp" />
     <ClCompile Include="AlmacenJson.cpp" />
@@ -149,6 +150,8 @@
     <ClInclude Include="Formato.h" />
     <ClInclude Include="Administrador.h" />
     <ClInclude Include="Auditor.h" />
+    <ClInclude Include="Bitacora.h" />
+    <ClInclude Include="RegistroBitacora.h" />
     <ClInclude Include="Cajero.h" />
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />
