@@ -320,15 +320,18 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     {
     case 1:
     {
-        // Opción B: Ocultar el menú y abrir Inventario
-        this->hide();
         GestorInventario* gestor = new GestorInventario();
         gestor->cargarDesdeArchivo("productos.json");
-        VentanaInventario* ventana = new VentanaInventario(gestor);
-        ventana->setAttribute(Qt::WA_DeleteOnClose);
-        // Cuando la ventana de inventario se cierre (o toquen 'Volver al Menú'), reaparece el menú principal
-        connect(ventana, &QWidget::destroyed, this, &QWidget::show);
-        ventana->show();
+        VentanaInventario* vista = new VentanaInventario(gestor, paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+        connect(vista, &VentanaInventario::volverAlMenu, this, [this, vista, gestor]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();
+                delete gestor;
+            });
     }
     break;
     case 2:
