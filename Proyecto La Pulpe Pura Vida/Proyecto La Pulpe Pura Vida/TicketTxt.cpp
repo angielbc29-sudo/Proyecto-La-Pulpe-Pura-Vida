@@ -22,6 +22,8 @@ QString TicketTxt::crear(const VentasCobro& v) const {
         t += Formato::fila(izq, Formato::sinSimbolo(l.subtotal()), W - 2) + "\n";
     }
     t += sep + "\n";
+    t += Formato::fila("Subtotal", Formato::colones(v.subtotal()), W) + "\n";
+    t += Formato::fila("IVA (13%)", Formato::colones(v.iva()), W) + "\n";
     t += Formato::fila("TOTAL", Formato::colones(v.total()), W) + "\n";
     t += Formato::fila("Efectivo", Formato::colones(v.pago()), W) + "\n";
     t += Formato::fila("Cambio", Formato::colones(v.cambio()), W) + "\n";
