@@ -126,8 +126,12 @@
     <ClCompile Include="UsuarioJsonRepository.cpp" />
     <ClCompile Include="VentanaInventario.cpp" />
     <ClCompile Include="VentasCobro.cpp" />
+    <ClCompile Include="Carrito.cpp" />
+    <ClCompile Include="ControladorVentas.cpp" />
+    <ClCompile Include="VentasWindow.cpp" />
     <QtMoc Include="GestionUsuariosView.h" />
     <QtMoc Include="VentanaHistorial.h" />
+    <QtMoc Include="VentasWindow.h" />
     <ClInclude Include="Carrito.h" />
     <ClInclude Include="ControladorVentas.h" />
     <ClInclude Include="Historial.h" />

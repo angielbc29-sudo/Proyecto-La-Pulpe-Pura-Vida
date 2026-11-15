@@ -21,6 +21,7 @@
 #include "Historial.h"
 #include "VentanaHistorial.h"
 #include "VentanaInventario.h"
+#include "VentasWindow.h"
 #include "GestorInventario.h"
 #include "UsuarioJsonRepository.h"
 #include "GestionUsuariosView.h"
@@ -306,8 +307,31 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     }
     break;
     case 2:
-        QMessageBox::information(this, "Módulo", "Aquí se abrirá Ventas y cobro");
-        break;
+    {
+        std::shared_ptr<Historial> historial;
+
+        try
+        {
+            historial = std::make_shared<Historial>(
+                std::make_shared<AlmacenJson>("ventas.json"));
+        }
+        catch (const std::exception&)
+        {
+            historial.reset();
+        }
+
+        VentasWindow* vista = new VentasWindow(historial, paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+
+        connect(vista, &VentasWindow::volverAlMenu, this, [this, vista]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();
+            });
+    }
+    break;
     case 3:
     {
         std::shared_ptr<Historial> historial;
