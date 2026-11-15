@@ -113,6 +113,9 @@
     <ClCompile Include="LoginDialog.cpp" />
     <ClCompile Include="Producto.cpp" />
     <ClCompile Include="Administrador.cpp" />
+    <ClCompile Include="Auditor.cpp" />
+    <ClCompile Include="Bitacora.cpp" />
+    <ClCompile Include="BitacoraView.cpp" />
     <ClCompile Include="Cajero.cpp" />
     <ClCompile Include="MenuPrincipalView.cpp" />
     <ClCompile Include="AlmacenJson.cpp" />
@@ -130,6 +133,7 @@
     <ClCompile Include="ControladorVentas.cpp" />
     <ClCompile Include="VentasWindow.cpp" />
     <QtMoc Include="GestionUsuariosView.h" />
+    <QtMoc Include="BitacoraView.h" />
     <QtMoc Include="VentanaHistorial.h" />
     <QtMoc Include="VentasWindow.h" />
     <ClInclude Include="Carrito.h" />
@@ -147,6 +151,9 @@
     <ClInclude Include="Errores.h" />
     <ClInclude Include="Formato.h" />
     <ClInclude Include="Administrador.h" />
+    <ClInclude Include="Auditor.h" />
+    <ClInclude Include="Bitacora.h" />
+    <ClInclude Include="RegistroBitacora.h" />
     <ClInclude Include="Cajero.h" />
     <ClInclude Include="Permiso.h" />
     <ClInclude Include="ProductosInventario.h" />

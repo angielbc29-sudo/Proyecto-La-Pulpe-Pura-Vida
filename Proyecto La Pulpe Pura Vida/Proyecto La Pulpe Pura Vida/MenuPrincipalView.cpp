@@ -25,6 +25,7 @@
 #include "GestorInventario.h"
 #include "UsuarioJsonRepository.h"
 #include "GestionUsuariosView.h"
+#include "BitacoraView.h"
 
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
@@ -149,10 +150,11 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
     btnUsuarios = crearTarjeta(cuerpo, "👥", "Usuarios y Permisos",
         "Control de roles, asignación de turnos y activación de personal.");
 
+    btnBitacora = crearTarjeta(cuerpo, "📋", "Bitácora del Sistema",
+        "Registro de lo que hace cada usuario en todos los módulos, con fecha y hora.");
+
     gridModulos = new QGridLayout();
     gridModulos->setSpacing(20);
-    gridModulos->setColumnStretch(0, 1);
-    gridModulos->setColumnStretch(1, 1);
 
     QVBoxLayout* layoutCuerpo = new QVBoxLayout(cuerpo);
     layoutCuerpo->setContentsMargins(50, 35, 50, 35);
@@ -204,6 +206,7 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
     connect(btnVentas, &QPushButton::clicked, this, [this]() { abrirModulo(2); });
     connect(btnComprobantes, &QPushButton::clicked, this, [this]() { abrirModulo(3); });
     connect(btnUsuarios, &QPushButton::clicked, this, [this]() { abrirModulo(4); });
+    connect(btnBitacora, &QPushButton::clicked, this, [this]() { abrirModulo(5); });
     connect(btnCerrarSesion, &QPushButton::clicked, this, &MenuPrincipalView::onBotonCerrarSesionClicked);
 
     configurarVistaSegunRol();
@@ -225,6 +228,7 @@ void MenuPrincipalView::configurarVistaSegunRol()
         btnVentas->hide();
         btnComprobantes->hide();
         btnUsuarios->hide();
+        btnBitacora->hide();
         return;
     }
 
@@ -249,13 +253,17 @@ void MenuPrincipalView::configurarVistaSegunRol()
         lblSubtitulo->setText("Turno de trabajo asignado: " +
             QString::fromStdString(usuarioActivo->getDescripcionTurno()));
     }
+    else if (rol == "Auditor")
+    {
+        lblSubtitulo->setText("Consulta de la actividad registrada en el sistema.");
+    }
     else
     {
         lblSubtitulo->setText("¿Qué área deseas gestionar hoy?");
     }
 
     // Cada tarjeta solo se muestra si el usuario tiene el permiso correspondiente
-    // (el cajero ve solo Ventas y Comprobantes; el administrador ve los 4 módulos)
+    // (el cajero ve solo Ventas y Comprobantes; el auditor solo la Bitácora; el administrador ve todo)
     struct Modulo
     {
         QPushButton* boton;
@@ -266,16 +274,33 @@ void MenuPrincipalView::configurarVistaSegunRol()
         { btnInventario,   Permiso::GESTIONAR_PRODUCTOS },
         { btnVentas,       Permiso::REALIZAR_VENTA },
         { btnComprobantes, Permiso::CONSULTAR_HISTORIAL },
-        { btnUsuarios,     Permiso::GESTIONAR_USUARIOS }
+        { btnUsuarios,     Permiso::GESTIONAR_USUARIOS },
+        { btnBitacora,     Permiso::VER_BITACORA }
     };
+
+    // Con más de 4 tarjetas se usan tres columnas, para que quepan sin agrandar la ventana
+    int visibles = 0;
+    for (const Modulo& m : modulos)
+    {
+        if (usuarioActivo->tienePermiso(m.permiso))
+        {
+            visibles++;
+        }
+    }
+
+    int columnas = (visibles > 4) ? 3 : 2;
+    for (int columna = 0; columna < columnas; columna++)
+    {
+        gridModulos->setColumnStretch(columna, 1);
+    }
 
     int posicion = 0;
     for (const Modulo& m : modulos)
     {
         if (usuarioActivo->tienePermiso(m.permiso))
         {
-            // Se acomodan de dos en dos, sin dejar huecos
-            gridModulos->addWidget(m.boton, posicion / 2, posicion % 2);
+            // Se acomodan por filas, sin dejar huecos
+            gridModulos->addWidget(m.boton, posicion / columnas, posicion % columnas);
             m.boton->show();
             posicion++;
         }
@@ -288,7 +313,7 @@ void MenuPrincipalView::configurarVistaSegunRol()
 
 void MenuPrincipalView::abrirModulo(int idModulo)
 {
-    // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos
+    // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos, 5 = Bitácora
     // Por ahora solo muestra un aviso. Cuando cada módulo tenga su ventana,
     // aquí se crea y se muestra (por ejemplo: VentasCobro* v = new VentasCobro(); v->show();)
     switch (idModulo)
@@ -372,6 +397,21 @@ void MenuPrincipalView::abrirModulo(int idModulo)
                 paginas->setCurrentIndex(0);
                 paginas->removeWidget(vista);
                 vista->deleteLater();   // se borra después del clic, no mientras se usa el botón
+            });
+    }
+    break;
+    case 5:
+    {
+        // Bitácora: lista de solo lectura con lo que ha hecho cada usuario
+        BitacoraView* vista = new BitacoraView(paginas);
+        paginas->addWidget(vista);
+        paginas->setCurrentWidget(vista);
+
+        connect(vista, &BitacoraView::volverAlMenu, this, [this, vista]()
+            {
+                paginas->setCurrentIndex(0);
+                paginas->removeWidget(vista);
+                vista->deleteLater();
             });
     }
     break;

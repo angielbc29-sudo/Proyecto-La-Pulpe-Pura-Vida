@@ -31,6 +31,15 @@
     <ClCompile Include="Cajero.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Auditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bitacora.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BitacoraView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MenuPrincipalView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,6 +141,15 @@
     <ClInclude Include="Cajero.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Auditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bitacora.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistroBitacora.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Permiso.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -207,6 +225,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VentanaHistorial.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="BitacoraView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VentasWindow.h">

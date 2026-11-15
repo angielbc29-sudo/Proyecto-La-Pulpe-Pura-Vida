@@ -33,6 +33,7 @@ private:
     QPushButton* btnVentas;
     QPushButton* btnComprobantes;
     QPushButton* btnUsuarios;
+    QPushButton* btnBitacora;
     QPushButton* btnCerrarSesion;
 
     // Debajo de la cabecera se muestra una sola "página" a la vez:
