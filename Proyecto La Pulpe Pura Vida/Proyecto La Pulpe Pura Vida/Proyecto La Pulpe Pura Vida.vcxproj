@@ -115,6 +115,7 @@
     <ClCompile Include="Administrador.cpp" />
     <ClCompile Include="Auditor.cpp" />
     <ClCompile Include="Bitacora.cpp" />
+    <ClCompile Include="BitacoraView.cpp" />
     <ClCompile Include="Cajero.cpp" />
     <ClCompile Include="MenuPrincipalView.cpp" />
     <ClCompile Include="AlmacenJson.cpp" />
@@ -132,6 +133,7 @@
     <ClCompile Include="ControladorVentas.cpp" />
     <ClCompile Include="VentasWindow.cpp" />
     <QtMoc Include="GestionUsuariosView.h" />
+    <QtMoc Include="BitacoraView.h" />
     <QtMoc Include="VentanaHistorial.h" />
     <QtMoc Include="VentasWindow.h" />
     <ClInclude Include="Carrito.h" />

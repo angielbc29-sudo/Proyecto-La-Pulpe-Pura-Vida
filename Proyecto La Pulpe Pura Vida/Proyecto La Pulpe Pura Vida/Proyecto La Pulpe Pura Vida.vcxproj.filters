@@ -37,6 +37,9 @@
     <ClCompile Include="Bitacora.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BitacoraView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MenuPrincipalView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -222,6 +225,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VentanaHistorial.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="BitacoraView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VentasWindow.h">
