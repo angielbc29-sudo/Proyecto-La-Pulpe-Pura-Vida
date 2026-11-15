@@ -32,6 +32,8 @@ QString TicketHtml::crear(const VentasCobro& v) const {
         return "<tr><td><b>" + n + "</b></td><td align=\"right\"><b>" + m + "</b></td></tr>";
         };
     h += "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\">";
+    h += fila("Subtotal", Formato::colones(v.subtotal()));
+    h += fila("IVA (13%)", Formato::colones(v.iva()));
     h += fila("TOTAL", Formato::colones(v.total()));
     h += fila("Efectivo", Formato::colones(v.pago()));
     h += fila("Cambio", Formato::colones(v.cambio()));

@@ -65,6 +65,8 @@ private:
     QLabel* lblDetalleTotal;
     QLabel* lblDetallePago;
     QLabel* lblDetalleCambio;
+    QLabel* lblDetalleSubtotal;
+    QLabel* lblDetalleIva;
     QTextBrowser* vistaPrevia;
     QFrame* bannerMensaje;
     QLabel* lblMensaje;

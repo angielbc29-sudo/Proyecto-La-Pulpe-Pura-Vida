@@ -289,16 +289,24 @@ void VentanaHistorial::construirPaginaDetalle()
     lblDetallePago->setObjectName("lblTotalDetalle");
     lblDetalleCambio = new QLabel(paginaDetalle);
     lblDetalleCambio->setObjectName("lblTotalDetalle");
+    lblDetalleSubtotal = new QLabel(paginaDetalle);
+    lblDetalleSubtotal->setObjectName("lblTotalDetalle");
+    lblDetalleIva = new QLabel(paginaDetalle);
+    lblDetalleIva->setObjectName("lblTotalDetalle");
 
     QGridLayout* layoutTotales = new QGridLayout();
     layoutTotales->setHorizontalSpacing(30);
     layoutTotales->setVerticalSpacing(4);
-    layoutTotales->addWidget(new QLabel("Total", paginaDetalle), 0, 0);
-    layoutTotales->addWidget(lblDetalleTotal, 0, 1);
-    layoutTotales->addWidget(new QLabel("Pagó en efectivo", paginaDetalle), 1, 0);
-    layoutTotales->addWidget(lblDetallePago, 1, 1);
-    layoutTotales->addWidget(new QLabel("Cambio", paginaDetalle), 2, 0);
-    layoutTotales->addWidget(lblDetalleCambio, 2, 1);
+    layoutTotales->addWidget(new QLabel("Subtotal", paginaDetalle), 0, 0);
+    layoutTotales->addWidget(lblDetalleSubtotal, 0, 1);
+    layoutTotales->addWidget(new QLabel("IVA (13%)", paginaDetalle), 1, 0);
+    layoutTotales->addWidget(lblDetalleIva, 1, 1);
+    layoutTotales->addWidget(new QLabel("Total", paginaDetalle), 2, 0);
+    layoutTotales->addWidget(lblDetalleTotal, 2, 1);
+    layoutTotales->addWidget(new QLabel("Pagó en efectivo", paginaDetalle), 3, 0);
+    layoutTotales->addWidget(lblDetallePago, 3, 1);
+    layoutTotales->addWidget(new QLabel("Cambio", paginaDetalle), 4, 0);
+    layoutTotales->addWidget(lblDetalleCambio, 4, 1);
     layoutTotales->setColumnStretch(2, 1);
 
     QLabel* lblNota = new QLabel("Los precios se guardaron al momento de la venta.", paginaDetalle);
@@ -621,7 +629,8 @@ void VentanaHistorial::mostrarDetalle(int numero)
             tablaDetalle->setItem(fila, 2, crearItem(Formato::colones(linea.precio()), true));
             tablaDetalle->setItem(fila, 3, crearItem(Formato::colones(linea.subtotal()), true));
         }
-
+        lblDetalleSubtotal->setText(Formato::colones(ventaActual_.subtotal()));
+        lblDetalleIva->setText(Formato::colones(ventaActual_.iva()));
         lblDetalleTotal->setText(Formato::colones(ventaActual_.total()));
         lblDetallePago->setText(Formato::colones(ventaActual_.pago()));
         lblDetalleCambio->setText(Formato::colones(ventaActual_.cambio()));
