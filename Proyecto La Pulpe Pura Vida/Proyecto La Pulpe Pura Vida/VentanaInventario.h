@@ -18,7 +18,8 @@ class VentanaInventario : public QWidget {
 
 private:
     GestorInventario* gestor;
-    bool soloReposicion;
+    enum ModoFiltro { FILTRO_TODOS, FILTRO_REPOSICION, FILTRO_INACTIVOS };
+    ModoFiltro modoActual;
     QString textoBusqueda;
 
     // Métricas superiores
@@ -32,6 +33,7 @@ private:
     QLineEdit* txtBuscador;
     QPushButton* btnFiltroTodos;
     QPushButton* btnFiltroReposicion;
+    QPushButton* btnFiltroInactivos;
     QPushButton* btnVerReposicionBanner;
 
     // Pie de página
@@ -56,4 +58,7 @@ public slots:
     void filtrarPorTexto(const QString& texto);
     void setFiltroTodos();
     void setFiltroReposicion();
+    void setFiltroInactivos();
+signals:
+    void volverAlMenu();
 };
