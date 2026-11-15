@@ -25,6 +25,7 @@
 
 #include "Administrador.h"
 #include "Auditor.h"
+#include "Bitacora.h"
 #include "Cajero.h"
 #include "IUsuarioRepository.h"
 #include "Turno.h"
@@ -377,6 +378,8 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
 
     if (repo->guardar(nuevo))
     {
+        Bitacora::registrar("Usuarios", "Usuario registrado",
+            "Usuario: " + usuario + " (" + nombre + "), rol: " + nuevo->getNombreRol());
         accept();   // cierra el formulario con resultado "aceptado": se pudo guardar
     }
     else

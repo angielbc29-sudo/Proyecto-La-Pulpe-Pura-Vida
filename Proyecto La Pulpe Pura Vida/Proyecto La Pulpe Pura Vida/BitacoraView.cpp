@@ -54,7 +54,8 @@ BitacoraView::BitacoraView(QWidget* parent)
 
     // ----- Filtros -----
     txtBuscar = new QLineEdit(this);
-    txtBuscar->setPlaceholderText("Buscar por usuario, acción o detalle...");
+    txtBuscar->setPlaceholderText("Buscar...");
+    txtBuscar->setToolTip("Busca por usuario, acción o detalle");
     txtBuscar->setClearButtonEnabled(true);
 
     cmbUsuario = new QComboBox(this);
@@ -113,14 +114,14 @@ BitacoraView::BitacoraView(QWidget* parent)
         QPushButton#btnVolver:hover { background-color: #fffaf3; border: 1px solid #e67e22; }
         QLineEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 7px 9px; }
         QLineEdit:focus { border: 2px solid #e67e22; }
-        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; min-width: 150px; }
+        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; min-width: 110px; }
         QComboBox:focus { border: 2px solid #e67e22; }
         QComboBox::drop-down { border: none; width: 30px; }
         QComboBox::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
         QComboBox QAbstractItemView { background-color: #ffffff; border: 1px solid #e0c9a6; selection-background-color: #fff3e0; selection-color: #3b2a1a; }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
-        QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
-        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
+        QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px 16px; }
+        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px 16px; }
     )");
 
     cargarRegistros();
@@ -224,6 +225,7 @@ void BitacoraView::llenarTabla()
         tabla->setItem(fila, 3, crearItem(modulo));
         tabla->setItem(fila, 4, crearItem(accion));
         tabla->setItem(fila, 5, crearItem(detalle));
+        tabla->item(fila, 5)->setToolTip(detalle);   // si el detalle es largo, se lee completo al pasar el mouse
     }
 
     int cantidad = tabla->rowCount();

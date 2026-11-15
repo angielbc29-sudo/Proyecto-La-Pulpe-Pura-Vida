@@ -16,6 +16,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include "Bitacora.h"
 #include "IUsuarioRepository.h"
 #include "RegistroUsuarioDialog.h"
 #include "Sesion.h"
@@ -243,6 +244,9 @@ void GestionUsuariosView::cambiarEstado(std::shared_ptr<Usuario> usuario)
         mostrarAviso("⚠️ No se pudo guardar el cambio. Intente de nuevo.", "error");
         return;
     }
+
+    Bitacora::registrar("Usuarios", usuario->isActivo() ? "Cuenta activada" : "Cuenta desactivada",
+        "Usuario: " + usuario->getUsername() + " (" + usuario->getNombreCompleto() + ")");
 
     QString nombre = QString::fromStdString(usuario->getNombreCompleto());
     mostrarAviso(usuario->isActivo()

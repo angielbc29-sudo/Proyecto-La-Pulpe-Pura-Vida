@@ -26,6 +26,7 @@
 #include "UsuarioJsonRepository.h"
 #include "GestionUsuariosView.h"
 #include "BitacoraView.h"
+#include "Bitacora.h"
 
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
@@ -316,6 +317,14 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos, 5 = Bitácora
     // Por ahora solo muestra un aviso. Cuando cada módulo tenga su ventana,
     // aquí se crea y se muestra (por ejemplo: VentasCobro* v = new VentasCobro(); v->show();)
+
+    // Queda registrado en la bitácora a cuál módulo entró el usuario
+    const char* nombresModulos[] = { "", "Inventario", "Ventas", "Historial", "Usuarios", "Bitácora" };
+    if (idModulo >= 1 && idModulo <= 5)
+    {
+        Bitacora::registrar(nombresModulos[idModulo], "Ingreso al módulo");
+    }
+
     switch (idModulo)
     {
     case 1:
@@ -431,6 +440,9 @@ void MenuPrincipalView::onBotonCerrarSesionClicked()
             ventana->close();
         }
     }
+
+    // Se registra antes de cerrar la sesión, para que quede el nombre del usuario
+    Bitacora::registrar("Sesión", "Cierre de sesión");
 
     Sesion::getInstancia().cerrar();
     accept();   // cierra el menú con resultado "aceptado": main vuelve a mostrar el login
