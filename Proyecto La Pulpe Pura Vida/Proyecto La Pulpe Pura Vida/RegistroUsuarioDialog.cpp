@@ -24,6 +24,7 @@
 #include <QVBoxLayout>
 
 #include "Administrador.h"
+#include "Auditor.h"
 #include "Cajero.h"
 #include "IUsuarioRepository.h"
 #include "Turno.h"
@@ -157,6 +158,7 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     cmbRol = new QComboBox(this);
     cmbRol->addItem("Cajero");
     cmbRol->addItem("Administrador");
+    cmbRol->addItem("Auditor");
 
     cmbTurno = new QComboBox(this);
     cmbTurno->addItem("Mañana", static_cast<int>(Turno::MANANA));
@@ -364,9 +366,13 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
         Turno turno = static_cast<Turno>(cmbTurno->currentData().toInt());
         nuevo = std::make_shared<Cajero>(nuevoId, usuario, hash, nombre, cedula, telefono, true, turno);
     }
-    else
+    else if (cmbRol->currentIndex() == 1)
     {
         nuevo = std::make_shared<Administrador>(nuevoId, usuario, hash, nombre, cedula, telefono, true);
+    }
+    else
+    {
+        nuevo = std::make_shared<Auditor>(nuevoId, usuario, hash, nombre, cedula, telefono, true);
     }
 
     if (repo->guardar(nuevo))

@@ -7,6 +7,7 @@
 #include <QString>
 
 #include "Administrador.h"
+#include "Auditor.h"
 #include "Cajero.h"
 #include "Turno.h"
 
@@ -195,6 +196,10 @@ std::vector<std::shared_ptr<Usuario>> UsuarioJsonRepository::deserializar()
         {
             Turno turno = textoATurno(obj["turno"].toString());
             lista.push_back(std::make_shared<Cajero>(id, user, hash, nombre, cedula, telefono, activo, turno));
+        }
+        else if (rol == "Auditor")
+        {
+            lista.push_back(std::make_shared<Auditor>(id, user, hash, nombre, cedula, telefono, activo));
         }
         else
         {
