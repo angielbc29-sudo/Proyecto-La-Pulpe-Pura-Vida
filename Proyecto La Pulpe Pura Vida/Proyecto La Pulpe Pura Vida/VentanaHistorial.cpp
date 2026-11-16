@@ -9,6 +9,7 @@
 #include <QDateEdit>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFont>
 #include <QFrame>
 #include <QGridLayout>
@@ -16,7 +17,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMessageBox>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QStackedWidget>
@@ -76,10 +76,10 @@ namespace
     std::unique_ptr<Ticket> crearTicket(const QString& formato)
     {
         if (formato == "PDF")
-            return std::make_unique<TicketPdf>("La Pulpe");
+            return std::make_unique<TicketPdf>("La Pulpe Pura Vida");
         if (formato == "HTML")
-            return std::make_unique<TicketHtml>("La Pulpe");
-        return std::make_unique<TicketTxt>("La Pulpe");
+            return std::make_unique<TicketHtml>("La Pulpe Pura Vida");
+        return std::make_unique<TicketTxt>("La Pulpe Pura Vida");
     }
 }
 
@@ -112,13 +112,10 @@ VentanaHistorial::VentanaHistorial(std::shared_ptr<Historial> historial, QWidget
     connect(btnReintentarCarga, &QPushButton::clicked, this, &VentanaHistorial::cargarHistorial);
     connect(btnFiltrar, &QPushButton::clicked, this, &VentanaHistorial::aplicarFiltro);
     connect(btnLimpiar, &QPushButton::clicked, this, &VentanaHistorial::limpiarFiltros);
-    connect(txtBuscar, &QLineEdit::returnPressed, this, &VentanaHistorial::aplicarFiltro);
-    connect(fechaDesde, &QDateEdit::dateChanged, this, [this](const QDate&) {
-        if (fechaDesde->date() <= fechaHasta->date()) aplicarFiltro();
-        });
-    connect(fechaHasta, &QDateEdit::dateChanged, this, [this](const QDate&) {
-        if (fechaDesde->date() <= fechaHasta->date()) aplicarFiltro();
-        });
+    // Filtra mientras se escribe o se cambian las fechas (igual que en los otros módulos)
+    connect(txtBuscar, &QLineEdit::textChanged, this, &VentanaHistorial::aplicarFiltro);
+    connect(fechaDesde, &QDateEdit::dateChanged, this, &VentanaHistorial::aplicarFiltro);
+    connect(fechaHasta, &QDateEdit::dateChanged, this, &VentanaHistorial::aplicarFiltro);
 
     connect(btnVolverHistorial, &QPushButton::clicked, this, [this]()
         {
@@ -225,6 +222,8 @@ void VentanaHistorial::construirPaginaHistorial()
     cabecera->setSectionResizeMode(6, QHeaderView::Fixed);
     tabla->setColumnWidth(6, 170);
     cabecera->setHighlightSections(false);
+    cabecera->setFixedHeight(44);                                // misma altura que la tapa de la barra (ver estilos)
+    tabla->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);    // la barra siempre ocupa su lugar y no corre las columnas
 
     lblSinVentas = new QLabel("No hay ventas para mostrar.", paginaHistorial);
     lblSinVentas->setObjectName("lblSinVentas");
@@ -238,7 +237,7 @@ void VentanaHistorial::construirPaginaHistorial()
     layoutContenido->addLayout(layoutMetricas);
     layoutContenido->addLayout(layoutFiltros);
     layoutContenido->addWidget(tabla, 1);
-    layoutContenido->addWidget(lblSinVentas);
+    layoutContenido->addWidget(lblSinVentas, 1);   // ocupa el lugar de la tabla para que la pantalla no "salte"
 }
 
 // ---------------- Pantalla de detalle ----------------
@@ -303,6 +302,8 @@ void VentanaHistorial::construirPaginaDetalle()
     cabeceraDetalle->setSectionResizeMode(QHeaderView::ResizeToContents);
     cabeceraDetalle->setSectionResizeMode(0, QHeaderView::Stretch);
     cabeceraDetalle->setHighlightSections(false);
+    cabeceraDetalle->setFixedHeight(44);
+    tablaDetalle->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     lblDetalleTotal = new QLabel(paginaDetalle);
     lblDetalleTotal->setObjectName("lblTotalDetalle");
@@ -473,8 +474,17 @@ void VentanaHistorial::aplicarEstilos()
         QDateEdit::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
         QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
-        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
-        QTextBrowser#vistaPrevia { background-color: #fffdf9; border: 1px solid #f0d9b5; border-radius: 12px; padding: 10px; }
+        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; padding: 0px 10px; }
+        QHeaderView::section:first { border-top-left-radius: 11px; }
+        QTableWidget QScrollBar:vertical { background: transparent; width: 12px; margin: 44px 0px 12px 0px; border: none; }
+        QTableWidget QScrollBar::sub-line:vertical { height: 44px; background-color: #fff3e0; border: none; border-top-right-radius: 11px; subcontrol-position: top; subcontrol-origin: margin; }
+        QTableWidget QScrollBar::add-line:vertical { height: 0px; }
+        QTableWidget QScrollBar::up-arrow:vertical, QTableWidget QScrollBar::down-arrow:vertical { width: 0px; height: 0px; }
+        QTableWidget QScrollBar::handle:vertical { background-color: #e0c9a6; border-radius: 3px; min-height: 30px; margin: 4px 3px 0px 3px; }
+        QTableWidget QScrollBar::handle:vertical:hover { background-color: #e67e22; }
+        QTableWidget QScrollBar::handle:vertical:disabled { background: transparent; }
+        QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical { background: none; }
+        QTextBrowser#vistaPrevia { background-color: #fffdf9; border: 1px solid #f0d9b5; border-radius: 12px; padding: 10px; font-family: "Courier New"; font-size: 13px; }
         QLabel#lblDetalleTitulo { font-size: 20px; font-weight: bold; }
         QLabel#lblDetalleInfo { color: #7a6650; }
         QLabel#lblEstadoVenta { background-color: #fff3e0; color: #8a6a4f; border: 1px solid #f0d9b5; border-radius: 10px; padding: 5px 12px; font-size: 11px; font-weight: bold; }
@@ -571,10 +581,12 @@ void VentanaHistorial::aplicarFiltro()
     const QDate desde = fechaDesde->date();
     const QDate hasta = fechaHasta->date();
 
+    // El aviso se muestra en la misma pantalla, en el lugar de la tabla
     if (desde > hasta)
     {
-        QMessageBox::warning(this, "Fechas inválidas",
-            "La fecha inicial no puede ser mayor que la fecha final.");
+        lblSinVentas->setText("La fecha «Desde» no puede ser mayor que la fecha «Hasta».");
+        lblSinVentas->setVisible(true);
+        tabla->setVisible(false);
         return;
     }
 
@@ -603,7 +615,11 @@ void VentanaHistorial::llenarTabla(const std::vector<VentasCobro>& ventas)
         tabla->setItem(fila, 0, crearItem(Formato::numero(venta.numero()), true));
         tabla->setItem(fila, 1, crearItem(venta.fecha().toString("dd/MM/yyyy HH:mm"), false));
         tabla->setItem(fila, 2, crearItem(venta.cajero(), false));
-        tabla->setItem(fila, 3, crearItem(QString::number(static_cast<int>(venta.lineas().size())) + " art.", true));
+        // Se cuentan las unidades vendidas (5 aguas = 5 art.), no solo las líneas
+        int unidades = 0;
+        for (const Linea& linea : venta.lineas())
+            unidades += linea.cantidad();
+        tabla->setItem(fila, 3, crearItem(QString::number(unidades) + " art.", true));
         tabla->setItem(fila, 4, crearItem(Formato::colones(venta.total()), true));
         tabla->setItem(fila, 5, crearItem(Formato::colones(venta.cambio()), true));
 
@@ -625,6 +641,10 @@ void VentanaHistorial::llenarTabla(const std::vector<VentasCobro>& ventas)
         tabla->setCellWidget(fila, 6, contenedor);
     }
 
+    if (txtBuscar->text().trimmed().isEmpty())
+        lblSinVentas->setText("No hay ventas para mostrar.");
+    else
+        lblSinVentas->setText("No se encontraron ventas que coincidan con la búsqueda.");
     lblSinVentas->setVisible(ventas.empty());
     tabla->setVisible(!ventas.empty());
 }
@@ -670,8 +690,11 @@ void VentanaHistorial::mostrarDetalle(int numero)
     }
     catch (const std::exception& e)
     {
-        QMessageBox::critical(this, "No se pudo abrir la venta",
-            QString::fromUtf8(e.what()));
+        // Se usa la pantalla de error del módulo en vez de una ventana emergente
+        lblErrorCarga->setText(
+            "No se pudo abrir la venta N.º " + Formato::numero(numero) + ": " +
+            QString::fromUtf8(e.what()) + "\n\nNo se modificó ningún dato.");
+        paginas->setCurrentWidget(paginaError);
     }
 }
 
@@ -682,13 +705,12 @@ void VentanaHistorial::actualizarVistaPrevia()
 
     if (cmbFormato->currentText() == "TXT")
     {
-        TicketTxt ticket("La Pulpe");
+        TicketTxt ticket("La Pulpe Pura Vida");
         vistaPrevia->setPlainText(historial_->generar(ventaActual_, ticket));
-        vistaPrevia->setFont(QFont("Courier New", 10));
     }
     else
     {
-        TicketHtml ticket("La Pulpe");
+        TicketHtml ticket("La Pulpe Pura Vida");
         vistaPrevia->setHtml(historial_->generar(ventaActual_, ticket));
     }
 }
@@ -717,8 +739,10 @@ void VentanaHistorial::imprimirTicket()
             "Venta N.º " + std::to_string(ventaActual_.numero()) +
             " en " + formato.toStdString());
 
+        // Se muestra la ruta completa para que el usuario encuentre el archivo
+        const QString rutaCompleta = QDir::toNativeSeparators(QFileInfo(ruta).absoluteFilePath());
         mostrarMensaje("Ticket / factura N.º " + Formato::numero(ventaActual_.numero()) +
-            " generado en formato " + formato + " — la venta no cambió.",
+            " generado en formato " + formato + " en: " + rutaCompleta + " — la venta no cambió.",
             "exito");
         btnImprimir->setText("Imprimir de nuevo");
     }

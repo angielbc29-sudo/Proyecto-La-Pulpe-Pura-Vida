@@ -7,6 +7,22 @@
 #include "Formato.h"
 #include "Ticket.h"
 
+namespace
+{
+    // Devuelve el texto en minúsculas y sin tildes, para que "jose" encuentre "José"
+    QString sinTildes(const QString& texto)
+    {
+        QString resultado;
+        const QString separado = texto.normalized(QString::NormalizationForm_D);   // separa la letra de su tilde
+        for (int i = 0; i < separado.size(); i++)
+        {
+            if (separado[i].category() != QChar::Mark_NonSpacing)
+                resultado += separado[i].toLower();
+        }
+        return resultado;
+    }
+}
+
 Historial::Historial(std::shared_ptr<Almacen> almacen)
     : almacen_(std::move(almacen))
 {
@@ -54,7 +70,7 @@ std::vector<VentasCobro> Historial::filtrar(const QString& texto,
     const QDate& desde,
     const QDate& hasta) const
 {
-    const QString busqueda = texto.trimmed();
+    const QString busqueda = sinTildes(texto.trimmed());
     std::vector<VentasCobro> resultado;
 
     for (const VentasCobro& venta : almacen_->listar())
@@ -63,7 +79,7 @@ std::vector<VentasCobro> Historial::filtrar(const QString& texto,
             busqueda.isEmpty()
             || QString::number(venta.numero()).contains(busqueda, Qt::CaseInsensitive)
             || Formato::numero(venta.numero()).contains(busqueda, Qt::CaseInsensitive)
-            || venta.cajero().contains(busqueda, Qt::CaseInsensitive);
+            || sinTildes(venta.cajero()).contains(busqueda);
 
         const QDate fecha = venta.fecha().date();
         const bool coincideDesde = !desde.isValid() || fecha >= desde;
@@ -119,3 +135,4 @@ void Historial::imprimir(const VentasCobro& venta, const Ticket& ticket, const Q
 {
     ticket.guardar(venta, ruta);
 }
+
