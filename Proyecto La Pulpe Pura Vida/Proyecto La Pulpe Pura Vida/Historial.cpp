@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "Errores.h"
+#include "Formato.h"
 #include "Ticket.h"
 
 Historial::Historial(std::shared_ptr<Almacen> almacen)
@@ -61,6 +62,7 @@ std::vector<VentasCobro> Historial::filtrar(const QString& texto,
         const bool coincideTexto =
             busqueda.isEmpty()
             || QString::number(venta.numero()).contains(busqueda, Qt::CaseInsensitive)
+            || Formato::numero(venta.numero()).contains(busqueda, Qt::CaseInsensitive)
             || venta.cajero().contains(busqueda, Qt::CaseInsensitive);
 
         const QDate fecha = venta.fecha().date();
