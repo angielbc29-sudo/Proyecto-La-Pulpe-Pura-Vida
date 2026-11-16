@@ -1,4 +1,5 @@
 #include "VentanaInventario.h"
+#include "Bitacora.h"
 #include <QDialog>
 #include <QFormLayout>
 #include <QDoubleSpinBox>
@@ -685,6 +686,12 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
         }
 
         if (gestor->guardarEnArchivo("productos.json")) {
+            // 📝 REGISTRO EN BITÁCORA:
+            if (sumar > 0) {
+                Bitacora::registrar("Inventario", "Stock repuesto", "Código " + codigo + ", +" + std::to_string(sumar));
+            }
+            Bitacora::registrar("Inventario", "Producto editado", "Código " + codigo + ", precio ₡" + std::to_string((int)nuevoPrecio));
+
             actualizarVista();
             mostrarAvisoPulpe(&modal, "✅ Actualizado", "El producto se actualizó y guardó en disco.", true);
             modal.accept();
@@ -753,6 +760,14 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
 
         gestor->cambiarEstado(codigo, nuevoEstado);
         gestor->guardarEnArchivo("productos.json");
+        // 📝 REGISTRO EN BITÁCORA:
+        if (nuevoEstado) {
+            Bitacora::registrar("Inventario", "Producto reactivado", "Código " + codigo);
+        }
+        else {
+            Bitacora::registrar("Inventario", "Producto desactivado", "Código " + codigo);
+        }
+
         actualizarVista();
         modal.accept();
         });
@@ -890,6 +905,8 @@ void VentanaInventario::abrirModalNuevoProducto() {
 
         if (gestor->agregarProducto(nuevo)) {
             gestor->guardarEnArchivo("productos.json");
+            // 📝 REGISTRO EN BITÁCORA:
+            Bitacora::registrar("Inventario", "Producto creado", "Código " + cod + ", " + nom);
             actualizarVista();
             mostrarAvisoPulpe(&modal, "✅ Producto Registrado", "El producto se sumó a la bodega con éxito.", true);
             modal.accept();
