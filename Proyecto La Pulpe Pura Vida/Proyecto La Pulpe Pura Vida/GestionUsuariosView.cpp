@@ -3,12 +3,14 @@
 #include <memory>
 #include <vector>
 
+#include <QComboBox>
 #include <QEvent>
 #include <QFont>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QStyle>
 #include <QTableWidget>
@@ -16,6 +18,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include "Bitacora.h"
 #include "IUsuarioRepository.h"
 #include "RegistroUsuarioDialog.h"
 #include "Sesion.h"
@@ -25,6 +28,21 @@
 
 namespace
 {
+    // Devuelve el texto en minúsculas y sin tildes, para que el buscador encuentre "María" al escribir "maria"
+    QString sinTildes(const QString& texto)
+    {
+        QString resultado;
+        const QString separado = texto.normalized(QString::NormalizationForm_D);   // separa la letra de su tilde
+        for (int i = 0; i < separado.size(); i++)
+        {
+            if (separado[i].category() != QChar::Mark_NonSpacing)
+            {
+                resultado += separado[i].toLower();
+            }
+        }
+        return resultado;
+    }
+
     // Crea una celda de texto (sin poder editarla)
     QTableWidgetItem* crearItem(const QString& texto, bool centrado)
     {
@@ -69,27 +87,55 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     layoutBarra->addStretch();
     layoutBarra->addWidget(btnRegistrar);
 
+    // ----- Filtros -----
+    txtBuscar = new QLineEdit(this);
+    txtBuscar->setPlaceholderText("Buscar por usuario, nombre, cédula o teléfono...");
+    txtBuscar->setClearButtonEnabled(true);
+
+    cmbRol = new QComboBox(this);
+    cmbRol->addItem("Todos los roles");
+    cmbRol->addItem("Cajero");
+    cmbRol->addItem("Administrador");
+    cmbRol->addItem("Auditor");
+
+    cmbEstado = new QComboBox(this);
+    cmbEstado->addItem("Todos los estados");
+    cmbEstado->addItem("Activos");
+    cmbEstado->addItem("Inactivos");
+
+    QHBoxLayout* layoutFiltros = new QHBoxLayout();
+    layoutFiltros->setSpacing(12);
+    layoutFiltros->addWidget(txtBuscar, 1);
+    layoutFiltros->addWidget(cmbRol);
+    layoutFiltros->addWidget(cmbEstado);
+
     // ----- Tabla -----
     tabla = new QTableWidget(this);
-    tabla->setColumnCount(8);
+    tabla->setColumnCount(9);
     tabla->setHorizontalHeaderLabels({ "N.°", "Usuario", "Nombre Completo", "Cédula",
-                                       "Teléfono", "Rol", "Estado", "Acción" });
+                                       "Teléfono", "Rol", "Turno", "Estado", "Acción" });
     tabla->verticalHeader()->setVisible(false);
     tabla->verticalHeader()->setDefaultSectionSize(56);
     tabla->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tabla->setSelectionMode(QAbstractItemView::NoSelection);
     tabla->setFocusPolicy(Qt::NoFocus);
     tabla->setShowGrid(false);
+    tabla->setWordWrap(false);   // el nombre va en un solo renglón, igual en ventana pequeña que en pantalla completa
 
     QHeaderView* cabecera = tabla->horizontalHeader();
     cabecera->setSectionResizeMode(QHeaderView::ResizeToContents);
     cabecera->setSectionResizeMode(2, QHeaderView::Stretch);   // el nombre ocupa el espacio que sobre
-    cabecera->setSectionResizeMode(7, QHeaderView::Fixed);     // la columna del botón tiene un ancho fijo
-    tabla->setColumnWidth(7, 150);
+    cabecera->setSectionResizeMode(8, QHeaderView::Fixed);     // la columna del botón tiene un ancho fijo
+    tabla->setColumnWidth(8, 134);
     cabecera->setHighlightSections(false);
 
+    // El encabezado tiene alto fijo y la franja de la barra de desplazamiento siempre está reservada:
+    // así la hoja de estilos puede pintar esa franja igual que el encabezado y redondear las esquinas
+    cabecera->setFixedHeight(44);
+    tabla->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
     // Los títulos de las columnas de texto van a la izquierda, igual que su contenido
-    for (int columna = 1; columna <= 5; columna++)
+    for (int columna = 1; columna <= 6; columna++)
     {
         tabla->horizontalHeaderItem(columna)->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     }
@@ -123,6 +169,7 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     layoutPrincipal->setContentsMargins(40, 30, 40, 30);
     layoutPrincipal->setSpacing(20);
     layoutPrincipal->addLayout(layoutBarra);
+    layoutPrincipal->addLayout(layoutFiltros);
     layoutPrincipal->addWidget(aviso);
     layoutPrincipal->addWidget(tabla, 1);
     setLayout(layoutPrincipal);
@@ -137,9 +184,26 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
         QPushButton#btnVolver:hover { background-color: #fffaf3; border: 1px solid #e67e22; }
         QPushButton#btnRegistrar { background-color: #e67e22; color: #ffffff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; }
         QPushButton#btnRegistrar:hover { background-color: #cf6d17; }
+        QLineEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 7px 9px; }
+        QLineEdit:focus { border: 2px solid #e67e22; }
+        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; min-width: 110px; }
+        QComboBox:focus { border: 2px solid #e67e22; }
+        QComboBox::drop-down { border: none; width: 30px; }
+        QComboBox::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
+        QComboBox QAbstractItemView { background-color: #ffffff; border: 1px solid #e0c9a6; selection-background-color: #fff3e0; selection-color: #3b2a1a; }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
         QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
-        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
+        QHeaderView { background-color: #fff3e0; border: none; border-top-left-radius: 11px; }
+        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; padding: 0px 10px; }
+        QHeaderView::section:first { border-top-left-radius: 11px; }
+        QTableWidget QScrollBar:vertical { background: transparent; width: 12px; margin: 44px 0px 12px 0px; border: none; }
+        QTableWidget QScrollBar::sub-line:vertical { height: 44px; background-color: #fff3e0; border: none; border-top-right-radius: 11px; subcontrol-position: top; subcontrol-origin: margin; }
+        QTableWidget QScrollBar::add-line:vertical { height: 0px; }
+        QTableWidget QScrollBar::up-arrow:vertical, QTableWidget QScrollBar::down-arrow:vertical { width: 0px; height: 0px; }
+        QTableWidget QScrollBar::handle:vertical { background-color: #e0c9a6; border-radius: 3px; min-height: 30px; margin: 4px 3px 0px 3px; }
+        QTableWidget QScrollBar::handle:vertical:hover { background-color: #e67e22; }
+        QTableWidget QScrollBar::handle:vertical:disabled { background: transparent; }
+        QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical { background: none; }
         QPushButton#btnDesactivar { background-color: #ffffff; color: #c0392b; border: 1px solid #c0392b; border-radius: 6px; padding: 6px 14px; font-weight: bold; }
         QPushButton#btnDesactivar:hover { background-color: #c0392b; color: #ffffff; }
         QPushButton#btnActivar { background-color: #ffffff; color: #1e8449; border: 1px solid #1e8449; border-radius: 6px; padding: 6px 14px; font-weight: bold; }
@@ -160,6 +224,11 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     connect(btnAvisoCancelar, &QPushButton::clicked, aviso, &QWidget::hide);
     connect(btnAvisoConfirmar, &QPushButton::clicked, this, &GestionUsuariosView::onBotonConfirmarAvisoClicked);
 
+    // Al escribir o cambiar un filtro, la tabla se vuelve a llenar
+    connect(txtBuscar, &QLineEdit::textChanged, this, [this](const QString&) { cargarTablaUsuarios(); });
+    connect(cmbRol, &QComboBox::currentIndexChanged, this, [this](int) { cargarTablaUsuarios(); });
+    connect(cmbEstado, &QComboBox::currentIndexChanged, this, [this](int) { cargarTablaUsuarios(); });
+
     cargarTablaUsuarios();
 }
 
@@ -170,12 +239,44 @@ void GestionUsuariosView::cargarTablaUsuarios()
     std::vector<std::shared_ptr<Usuario>> usuarios = repo->obtenerTodos();
     std::shared_ptr<Usuario> usuarioEnSesion = Sesion::getInstancia().getUsuarioActual();
 
-    tabla->setRowCount(0);
-    tabla->setRowCount(static_cast<int>(usuarios.size()));
+    QString busqueda = sinTildes(txtBuscar->text().trimmed());
 
-    for (int fila = 0; fila < static_cast<int>(usuarios.size()); fila++)
+    tabla->clearSpans();
+    tabla->setRowCount(0);
+
+    for (size_t i = 0; i < usuarios.size(); i++)
     {
-        std::shared_ptr<Usuario> u = usuarios[fila];
+        std::shared_ptr<Usuario> u = usuarios[i];
+
+        // Filtro por rol y por estado (la posición 0 de cada lista es "Todos")
+        if (cmbRol->currentIndex() > 0 && QString::fromStdString(u->getNombreRol()) != cmbRol->currentText())
+        {
+            continue;
+        }
+        if (cmbEstado->currentIndex() == 1 && !u->isActivo())
+        {
+            continue;
+        }
+        if (cmbEstado->currentIndex() == 2 && u->isActivo())
+        {
+            continue;
+        }
+
+        // Buscador: el texto puede estar en el usuario, el nombre, la cédula o el teléfono
+        // (la cédula y el teléfono se pueden escribir con guiones o sin ellos)
+        QString cedula = QString::fromStdString(u->getCedula());
+        QString telefono = QString::fromStdString(u->getTelefono());
+        if (!busqueda.isEmpty()
+            && !sinTildes(QString::fromStdString(u->getUsername())).contains(busqueda)
+            && !sinTildes(QString::fromStdString(u->getNombreCompleto())).contains(busqueda)
+            && !cedula.contains(busqueda) && !QString(cedula).remove('-').contains(busqueda)
+            && !telefono.contains(busqueda) && !QString(telefono).remove('-').contains(busqueda))
+        {
+            continue;
+        }
+
+        int fila = tabla->rowCount();
+        tabla->insertRow(fila);
 
         tabla->setItem(fila, 0, crearItem(QString::number(u->getId()), true));
         tabla->setItem(fila, 1, crearItem(QString::fromStdString(u->getUsername()), false));
@@ -184,13 +285,16 @@ void GestionUsuariosView::cargarTablaUsuarios()
         tabla->setItem(fila, 4, crearItem(QString::fromStdString(u->getTelefono()), false));
         tabla->setItem(fila, 5, crearItem(QString::fromStdString(u->getNombreRol()), false));
 
+        // Turno: el del cajero; los demás roles devuelven "Sin turno fijo"
+        tabla->setItem(fila, 6, crearItem(QString::fromStdString(u->getDescripcionTurno()), false));
+
         // Estado: verde si está activo, rojo si está inactivo
         QTableWidgetItem* itemEstado = crearItem(u->isActivo() ? "Activo" : "Inactivo", true);
         itemEstado->setForeground(QBrush(QColor(u->isActivo() ? "#1e8449" : "#c0392b")));
         QFont fuente = itemEstado->font();
         fuente.setBold(true);
         itemEstado->setFont(fuente);
-        tabla->setItem(fila, 6, itemEstado);
+        tabla->setItem(fila, 7, itemEstado);
 
         // Botón para activar o desactivar la cuenta
         QPushButton* btnAccion = new QPushButton(u->isActivo() ? "Desactivar" : "Activar");
@@ -217,7 +321,18 @@ void GestionUsuariosView::cargarTablaUsuarios()
         QHBoxLayout* layoutCelda = new QHBoxLayout(contenedor);
         layoutCelda->setContentsMargins(10, 6, 10, 6);
         layoutCelda->addWidget(btnAccion, 0, Qt::AlignCenter);
-        tabla->setCellWidget(fila, 7, contenedor);
+        tabla->setCellWidget(fila, 8, contenedor);
+    }
+
+    // Si ningún usuario cumple los filtros, se avisa en un renglón que ocupa toda la tabla
+    if (tabla->rowCount() == 0)
+    {
+        tabla->insertRow(0);
+        tabla->setSpan(0, 0, 1, tabla->columnCount());
+
+        QTableWidgetItem* itemVacio = crearItem("No se encontraron usuarios con esa búsqueda.", true);
+        itemVacio->setForeground(QBrush(QColor("#8a7560")));
+        tabla->setItem(0, 0, itemVacio);
     }
 }
 
@@ -243,6 +358,9 @@ void GestionUsuariosView::cambiarEstado(std::shared_ptr<Usuario> usuario)
         mostrarAviso("⚠️ No se pudo guardar el cambio. Intente de nuevo.", "error");
         return;
     }
+
+    Bitacora::registrar("Usuarios", usuario->isActivo() ? "Cuenta activada" : "Cuenta desactivada",
+        "Usuario: " + usuario->getUsername() + " (" + usuario->getNombreCompleto() + ")");
 
     QString nombre = QString::fromStdString(usuario->getNombreCompleto());
     mostrarAviso(usuario->isActivo()

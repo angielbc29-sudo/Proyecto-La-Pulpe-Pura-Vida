@@ -17,6 +17,21 @@
 
 namespace
 {
+    // Devuelve el texto en minúsculas y sin tildes, para que el buscador encuentre "sesión" al escribir "sesion"
+    QString sinTildes(const QString& texto)
+    {
+        QString resultado;
+        const QString separado = texto.normalized(QString::NormalizationForm_D);   // separa la letra de su tilde
+        for (int i = 0; i < separado.size(); i++)
+        {
+            if (separado[i].category() != QChar::Mark_NonSpacing)
+            {
+                resultado += separado[i].toLower();
+            }
+        }
+        return resultado;
+    }
+
     // Crea una celda de texto (sin poder editarla)
     QTableWidgetItem* crearItem(const QString& texto)
     {
@@ -54,7 +69,8 @@ BitacoraView::BitacoraView(QWidget* parent)
 
     // ----- Filtros -----
     txtBuscar = new QLineEdit(this);
-    txtBuscar->setPlaceholderText("Buscar por usuario, acción o detalle...");
+    txtBuscar->setPlaceholderText("Buscar...");
+    txtBuscar->setToolTip("Busca por usuario, acción o detalle");
     txtBuscar->setClearButtonEnabled(true);
 
     cmbUsuario = new QComboBox(this);
@@ -88,6 +104,11 @@ BitacoraView::BitacoraView(QWidget* parent)
     cabecera->setSectionResizeMode(5, QHeaderView::Stretch);   // el detalle ocupa el espacio que sobre
     cabecera->setHighlightSections(false);
 
+    // El encabezado tiene alto fijo y la franja de la barra de desplazamiento siempre está reservada:
+    // así la hoja de estilos puede pintar esa franja igual que el encabezado y redondear las esquinas
+    cabecera->setFixedHeight(44);
+    tabla->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
     for (int columna = 0; columna < 6; columna++)
     {
         tabla->horizontalHeaderItem(columna)->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -113,14 +134,24 @@ BitacoraView::BitacoraView(QWidget* parent)
         QPushButton#btnVolver:hover { background-color: #fffaf3; border: 1px solid #e67e22; }
         QLineEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 7px 9px; }
         QLineEdit:focus { border: 2px solid #e67e22; }
-        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; min-width: 150px; }
+        QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 8px; padding: 6px 10px; min-height: 22px; min-width: 110px; }
         QComboBox:focus { border: 2px solid #e67e22; }
         QComboBox::drop-down { border: none; width: 30px; }
         QComboBox::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
         QComboBox QAbstractItemView { background-color: #ffffff; border: 1px solid #e0c9a6; selection-background-color: #fff3e0; selection-color: #3b2a1a; }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
-        QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
-        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
+        QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px 16px; }
+        QHeaderView { background-color: #fff3e0; border: none; border-top-left-radius: 11px; }
+        QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; padding: 0px 16px; }
+        QHeaderView::section:first { border-top-left-radius: 11px; }
+        QTableWidget QScrollBar:vertical { background: transparent; width: 12px; margin: 44px 0px 12px 0px; border: none; }
+        QTableWidget QScrollBar::sub-line:vertical { height: 44px; background-color: #fff3e0; border: none; border-top-right-radius: 11px; subcontrol-position: top; subcontrol-origin: margin; }
+        QTableWidget QScrollBar::add-line:vertical { height: 0px; }
+        QTableWidget QScrollBar::up-arrow:vertical, QTableWidget QScrollBar::down-arrow:vertical { width: 0px; height: 0px; }
+        QTableWidget QScrollBar::handle:vertical { background-color: #e0c9a6; border-radius: 3px; min-height: 30px; margin: 4px 3px 0px 3px; }
+        QTableWidget QScrollBar::handle:vertical:hover { background-color: #e67e22; }
+        QTableWidget QScrollBar::handle:vertical:disabled { background: transparent; }
+        QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical { background: none; }
     )");
 
     cargarRegistros();
@@ -172,7 +203,7 @@ void BitacoraView::cargarRegistros()
 
 void BitacoraView::llenarTabla()
 {
-    QString busqueda = txtBuscar->text().trimmed();
+    QString busqueda = sinTildes(txtBuscar->text().trimmed());
     QDate hoy = QDate::currentDate();
 
     tabla->setRowCount(0);
@@ -209,9 +240,9 @@ void BitacoraView::llenarTabla()
 
         // Buscador: el texto puede estar en el usuario, la acción o el detalle
         if (!busqueda.isEmpty()
-            && !usuario.contains(busqueda, Qt::CaseInsensitive)
-            && !accion.contains(busqueda, Qt::CaseInsensitive)
-            && !detalle.contains(busqueda, Qt::CaseInsensitive))
+            && !sinTildes(usuario).contains(busqueda)
+            && !sinTildes(accion).contains(busqueda)
+            && !sinTildes(detalle).contains(busqueda))
         {
             continue;
         }
@@ -224,6 +255,7 @@ void BitacoraView::llenarTabla()
         tabla->setItem(fila, 3, crearItem(modulo));
         tabla->setItem(fila, 4, crearItem(accion));
         tabla->setItem(fila, 5, crearItem(detalle));
+        tabla->item(fila, 5)->setToolTip(detalle);   // si el detalle es largo, se lee completo al pasar el mouse
     }
 
     int cantidad = tabla->rowCount();
