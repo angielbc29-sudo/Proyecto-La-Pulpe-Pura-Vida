@@ -1,23 +1,41 @@
 #include "VentanaInventario.h"
 #include "Bitacora.h"
+#include "Formato.h"
 #include <QDialog>
 #include <QFormLayout>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
-#include <QMessageBox>
 #include <QScrollBar>
-#include <QLocale>
 #include <QComboBox>
 #include <QRegularExpressionValidator>
 #include <QGraphicsDropShadowEffect>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 
 
 
 namespace {
+    // Devuelve el texto en minúsculas y sin tildes, para que el buscador encuentre "Café" al escribir "cafe"
+    QString sinTildes(const QString& texto) {
+        QString resultado;
+        const QString separado = texto.normalized(QString::NormalizationForm_D);   // separa la letra de su tilde
+        for (int i = 0; i < separado.size(); i++) {
+            if (separado[i].category() != QChar::Mark_NonSpacing) {
+                resultado += separado[i].toLower();
+            }
+        }
+        return resultado;
+    }
+
+    // Estilo del fondo de los modales: el selector #fondoModal evita que el borde
+    // redondeado se les pegue también a las etiquetas del formulario
+    const QString ESTILO_FONDO_MODAL =
+        "QWidget#fondoModal { background-color: #fff8ee; border: 1.5px solid #f0d9b5; border-radius: 16px; }"
+        "QLabel { color: #7a6650; font-size: 12px; border: none; background: transparent; }";
+
+    // "1 producto" / "3 productos"
+    QString textoProductos(int cantidad) {
+        return QString::number(cantidad) + (cantidad == 1 ? " producto" : " productos");
+    }
+
     void mostrarAvisoPulpe(QWidget* parent, const QString& titulo, const QString& mensaje, bool esExito = true) {
         QDialog dlg(parent);
         dlg.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
@@ -84,8 +102,8 @@ VentanaInventario::VentanaInventario(GestorInventario* gestorCompartido, QWidget
 
     if (gestor != nullptr) {
         gestor->cargarDesdeArchivo("productos.json");
-        // Si el archivo estaba vacío, inicializamos con los del prototipo oficial del informe
-        if (gestor->getProductosActivos().empty()) {
+        // Si el archivo estaba vacío (no hay ningún producto, ni activo ni inactivo), inicializamos con los del prototipo oficial del informe
+        if (gestor->getTodosLosProductos().empty()) {
             gestor->agregarProducto(Producto("001", "Leche Dos Pinos", "Lácteos", 1100.0, 15));
             gestor->agregarProducto(Producto("002", "Arroz Tío Pelón", "Abarrotes", 1400.0, 3));
             gestor->agregarProducto(Producto("003", "Galletas Chiky", "Snacks y galletas", 450.0, 0));
@@ -182,14 +200,14 @@ void VentanaInventario::configurarInterfaz() {
 
     lblTextoAlerta = new QLabel(banner);
     lblTextoAlerta->setStyleSheet("font-size: 12px; font-weight: bold; color: #92400e;");
+    lblTextoAlerta->setWordWrap(true);   // si hay muchos productos baja de línea en vez de estirar la ventana
 
     btnVerReposicionBanner = new QPushButton("Ver reposición →", banner);
     btnVerReposicionBanner->setObjectName("btnLinkReposicion");
     btnVerReposicionBanner->setCursor(Qt::PointingHandCursor);
     connect(btnVerReposicionBanner, &QPushButton::clicked, this, &VentanaInventario::setFiltroReposicion);
 
-    lBanner->addWidget(lblTextoAlerta);
-    lBanner->addStretch();
+    lBanner->addWidget(lblTextoAlerta, 1);
     lBanner->addWidget(btnVerReposicionBanner);
     layoutPrincipal->addWidget(banner);
 
@@ -231,8 +249,11 @@ void VentanaInventario::configurarInterfaz() {
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     if (scroll->verticalScrollBar()) {
         scroll->verticalScrollBar()->setStyleSheet(
-            "QScrollBar:vertical { width: 6px; background: transparent; }"
-            "QScrollBar::handle:vertical { background: #e0c9a6; border-radius: 3px; }"
+            "QScrollBar:vertical { width: 6px; background: transparent; border: none; }"
+            "QScrollBar::handle:vertical { background: #e0c9a6; border-radius: 3px; min-height: 30px; }"
+            "QScrollBar::handle:vertical:hover { background: #e67e22; }"
+            "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }"
+            "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }"
         );
     }
 
@@ -241,6 +262,7 @@ void VentanaInventario::configurarInterfaz() {
     gridProductos = new QGridLayout(contenedorCards);
     gridProductos->setSpacing(16);
     gridProductos->setContentsMargins(0, 8, 0, 8);
+    gridProductos->setAlignment(Qt::AlignTop | Qt::AlignLeft);   // las tarjetas empiezan arriba a la izquierda, sin quedar flotando
 
     scroll->setWidget(contenedorCards);
     layoutPrincipal->addWidget(scroll, 1);
@@ -348,6 +370,7 @@ void VentanaInventario::estilizarVentana() {
 // =====================================================
 QWidget* VentanaInventario::crearCardProducto(const Producto& prod) {
     QFrame* card = new QFrame();
+    card->setObjectName("cardProducto");
     card->setFixedSize(290, 185);
     card->setCursor(Qt::PointingHandCursor);
 
@@ -367,11 +390,11 @@ QWidget* VentanaInventario::crearCardProducto(const Producto& prod) {
     }
 
     card->setStyleSheet(QString(
-        "QFrame {"
+        "QFrame#cardProducto {"
         "   %1"
         "   border-radius: 12px;"
         "}"
-        "QFrame:hover {"
+        "QFrame#cardProducto:hover {"
         "   border: 2px solid #e67e22;"
         "}"
         "QLabel { background: transparent; border: none; font-family: 'Segoe UI'; }"
@@ -427,8 +450,7 @@ QWidget* VentanaInventario::crearCardProducto(const Producto& prod) {
 
     // Fila inferior: Precio y Estado
     QHBoxLayout* filaBot = new QHBoxLayout();
-    QLocale loc(QLocale::Spanish, QLocale::CostaRica);
-    QLabel* lblPrecio = new QLabel("₡ " + loc.toString((int)prod.getPrecio()), card);
+    QLabel* lblPrecio = new QLabel(Formato::colones(prod.getPrecio()), card);   // mismo formato de colones que el resto del sistema
     lblPrecio->setStyleSheet(QString("font-size: 15px; font-weight: 900; color: %1;").arg(esInactivo ? "#8a7560" : "#3b2a1a"));
 
     QString txtEstado;
@@ -505,61 +527,45 @@ void VentanaInventario::actualizarVista() {
     }
 
     // Actualizamos las tarjetas superiores
-    QLocale loc(QLocale::Spanish, QLocale::CostaRica);
     if (lblTotalUnidades) lblTotalUnidades->setText(QString::number(totalUnidades));
-    if (lblDetalleUnidades) lblDetalleUnidades->setText(QString("en %1 productos").arg((int)productosActivos.size()));
+    if (lblDetalleUnidades) lblDetalleUnidades->setText("en " + textoProductos((int)productosActivos.size()));
     if (lblTotalAgotados) lblTotalAgotados->setText(QString("%1").arg(agotados, 2, 10, QChar('0')));
-    if (lblValorTotal) lblValorTotal->setText("₡" + loc.toString((int)valorTotal));
+    if (lblValorTotal) lblValorTotal->setText(Formato::colones(valorTotal));
 
     // Texto de alerta de reposición
-    QString aviso = "⚠️ Por reponer... ";
-    if (!nombresBajos.isEmpty()) aviso += nombresBajos.join(" / ") + " ";
-    if (!nombresAgotados.isEmpty()) aviso += nombresAgotados.join(" / ") + " agotadas";
-    if (nombresBajos.isEmpty() && nombresAgotados.isEmpty()) aviso = "✅ Todas las existencias están en niveles óptimos.";
+    QStringList partesAviso;
+    if (!nombresBajos.isEmpty()) partesAviso.append("Por reponer: " + nombresBajos.join(", "));
+    if (!nombresAgotados.isEmpty()) partesAviso.append("Agotados: " + nombresAgotados.join(", "));
+
+    QString aviso = "✅ Todas las existencias están en niveles óptimos.";
+    if (!partesAviso.isEmpty()) aviso = "⚠️ " + partesAviso.join("  ·  ");
     if (lblTextoAlerta) lblTextoAlerta->setText(aviso);
+    if (btnVerReposicionBanner) btnVerReposicionBanner->setVisible(!partesAviso.isEmpty());
 
-    // ✅ LEER DIRECTAMENTE DESDE EL ARCHIVO JSON PARA MOSTRAR TODOS LOS CÓDIGOS (0010, ETC)
-    QFile archivo("productos.json");
+    // Los productos se toman del gestor (no se vuelve a leer el archivo desde la vista)
     std::vector<Producto> listaParaMostrar;
-
-    if (archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QJsonDocument doc = QJsonDocument::fromJson(archivo.readAll());
-        archivo.close();
-        if (doc.isArray()) {
-            QJsonArray arr = doc.array();
-            for (const auto& val : arr) {
-                QJsonObject obj = val.toObject();
-                Producto p(
-                    obj["codigo"].toString().toStdString(),
-                    obj["nombre"].toString().toStdString(),
-                    obj["categoria"].toString().toStdString(),
-                    obj["precio"].toDouble(),
-                    obj["stock"].toInt()
-                );
-                p.setActivo(obj["activo"].toBool());
-
-                if (modoActual == FILTRO_INACTIVOS) {
-                    if (!p.getActivo()) listaParaMostrar.push_back(p);
-                }
-                else if (modoActual == FILTRO_REPOSICION) {
-                    if (p.getActivo() && p.getStock() <= 5) listaParaMostrar.push_back(p);
-                }
-                else {
-                    if (p.getActivo()) listaParaMostrar.push_back(p);
-                }
-            }
+    for (const auto& p : gestor->getTodosLosProductos()) {
+        if (modoActual == FILTRO_INACTIVOS) {
+            if (!p.getActivo()) listaParaMostrar.push_back(p);
+        }
+        else if (modoActual == FILTRO_REPOSICION) {
+            if (p.getActivo() && p.getStock() <= 5) listaParaMostrar.push_back(p);
+        }
+        else {
+            if (p.getActivo()) listaParaMostrar.push_back(p);
         }
     }
 
     int columna = 0;
     int fila = 0;
     int renderizados = 0;
+    QString buscado = sinTildes(textoBusqueda.trimmed());
 
     for (const auto& prod : listaParaMostrar) {
-        if (!textoBusqueda.isEmpty()) {
-            QString cod = QString::fromStdString(prod.getCodigo()).toLower();
-            QString nom = QString::fromStdString(prod.getNombre()).toLower();
-            if (!cod.contains(textoBusqueda.toLower()) && !nom.contains(textoBusqueda.toLower())) {
+        if (!buscado.isEmpty()) {
+            QString cod = sinTildes(QString::fromStdString(prod.getCodigo()));
+            QString nom = sinTildes(QString::fromStdString(prod.getNombre()));
+            if (!cod.contains(buscado) && !nom.contains(buscado)) {
                 continue;
             }
         }
@@ -575,8 +581,22 @@ void VentanaInventario::actualizarVista() {
         }
     }
 
+    // Aviso cuando no hay nada que mostrar (se borra solo en la siguiente actualización, como las tarjetas)
+    if (renderizados == 0) {
+        QString textoVacio;
+        if (!buscado.isEmpty()) textoVacio = "No se encontraron productos que coincidan con la búsqueda.";
+        else if (modoActual == FILTRO_INACTIVOS) textoVacio = "No hay productos desactivados.";
+        else if (modoActual == FILTRO_REPOSICION) textoVacio = "No hay productos por reponer.";
+        else textoVacio = "Todavía no hay productos registrados.";
+
+        QLabel* lblVacio = new QLabel(textoVacio, contenedorCards);
+        lblVacio->setStyleSheet("font-size: 13px; color: #8a7560; padding: 20px 4px;");
+        gridProductos->addWidget(lblVacio, 0, 0);
+    }
+
     if (lblResumenPie) {
-        lblResumenPie->setText(QString::number(renderizados) + " productos visibles — " + QString::number(totalUnidades) + " unidades en total");
+        QString visibles = textoProductos(renderizados) + (renderizados == 1 ? " visible" : " visibles");
+        lblResumenPie->setText(visibles + " — " + QString::number(totalUnidades) + " unidades en total");
     }
 }
 
@@ -593,7 +613,8 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
 
     // Contenedor con bordes redondeados y sombra
     QWidget* fondoModal = new QWidget(&modal);
-    fondoModal->setStyleSheet("background-color: #fff8ee; border: 1.5px solid #f0d9b5; border-radius: 16px;");
+    fondoModal->setObjectName("fondoModal");
+    fondoModal->setStyleSheet(ESTILO_FONDO_MODAL);
 
     QGraphicsDropShadowEffect* sombra = new QGraphicsDropShadowEffect(&modal);
     sombra->setBlurRadius(20);
@@ -630,16 +651,20 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
 
     QFormLayout form;
 
+    // Nombre editable (mismas reglas que al crear el producto)
+    QLineEdit txtNombre(fondoModal);
+    txtNombre.setValidator(new QRegularExpressionValidator(QRegularExpression("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ .-]+$"), &modal));
+    txtNombre.setMaxLength(40);
+    txtNombre.setText(QString::fromStdString(prod->getNombre()));
+
     QDoubleSpinBox spinPrecio(fondoModal);
     spinPrecio.setRange(0.0, 1000000.0);
     spinPrecio.setDecimals(0);
-    spinPrecio.setValue(0.0);             // Empieza en 0
+    spinPrecio.setValue(prod->getPrecio());   // Empieza con el precio actual del producto
     spinPrecio.setPrefix("₡ ");
-    spinPrecio.setSpecialValueText("₡ 0"); // Si se borra, se queda en ₡ 0
-      
 
     QSpinBox spinSumarStock(fondoModal);
-    spinSumarStock.setRange(0, 500);
+    spinSumarStock.setRange(0, 10000);
     spinSumarStock.setValue(0);
     spinSumarStock.setSuffix(" unid.");
 
@@ -647,9 +672,11 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
     lblStockActual->setStyleSheet("font-weight: bold; color: #1e8449; border: none;");
 
     QString estiloInput = "background: white; border: 1px solid #e0c9a6; border-radius: 8px; padding: 7px; color: #3b2a1a; font-size: 13px;";
+    txtNombre.setStyleSheet(estiloInput);
     spinPrecio.setStyleSheet(estiloInput);
     spinSumarStock.setStyleSheet(estiloInput);
 
+    form.addRow("Nombre *:", &txtNombre);
     form.addRow("Stock actual:", lblStockActual);
     form.addRow("Reponer (+ sumar stock):", &spinSumarStock);
     form.addRow("Precio de venta *:", &spinPrecio);
@@ -672,17 +699,30 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
     layout->addLayout(lBotones);
 
     connect(&btnGuardar, &QPushButton::clicked, [&]() {
+        std::string nuevoNombre = txtNombre.text().simplified().toStdString();
         double nuevoPrecio = spinPrecio.value();
         int sumar = spinSumarStock.value();
 
+        if (nuevoNombre.empty()) {
+            mostrarAvisoPulpe(&modal, "⚠️ Campo obligatorio", "El nombre no puede quedar vacío.", false);
+            return;
+        }
+        if (!gestor->validarNombreUnico(nuevoNombre, codigo)) {
+            mostrarAvisoPulpe(&modal, "⚠️ Nombre duplicado", "Ya existe otro producto con ese nombre.", false);
+            return;
+        }
         if (nuevoPrecio <= 0.0) {
             mostrarAvisoPulpe(&modal, "⚠️ Precio inválido", "El precio debe ser estrictamente mayor a ₡0.", false);
             return;
         }
 
-        prod->setPrecio(nuevoPrecio);
+        // Se guarda lo anterior para saber qué cambió (y anotar solo eso en la bitácora)
+        bool cambioNombre = (nuevoNombre != prod->getNombre());
+        bool cambioPrecio = (nuevoPrecio != prod->getPrecio());
+
+        gestor->actualizarProducto(codigo, nuevoNombre, nuevoPrecio);
         if (sumar > 0) {
-            prod->agregarStock(sumar);
+            gestor->buscarPorCodigo(codigo)->agregarStock(sumar);
         }
 
         if (gestor->guardarEnArchivo("productos.json")) {
@@ -690,7 +730,9 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
             if (sumar > 0) {
                 Bitacora::registrar("Inventario", "Stock repuesto", "Código " + codigo + ", +" + std::to_string(sumar));
             }
-            Bitacora::registrar("Inventario", "Producto editado", "Código " + codigo + ", precio ₡" + std::to_string((int)nuevoPrecio));
+            if (cambioNombre || cambioPrecio) {
+                Bitacora::registrar("Inventario", "Producto editado", "Código " + codigo + ", " + nuevoNombre + ", precio ₡" + std::to_string((int)nuevoPrecio));
+            }
 
             actualizarVista();
             mostrarAvisoPulpe(&modal, "✅ Actualizado", "El producto se actualizó y guardó en disco.", true);
@@ -759,7 +801,11 @@ void VentanaInventario::abrirModalDetalleProducto(const std::string& codigo) {
         }
 
         gestor->cambiarEstado(codigo, nuevoEstado);
-        gestor->guardarEnArchivo("productos.json");
+        if (!gestor->guardarEnArchivo("productos.json")) {
+            gestor->cambiarEstado(codigo, !nuevoEstado);   // se deja como estaba
+            mostrarAvisoPulpe(&modal, "❌ Error", "No se pudo escribir en productos.json.", false);
+            return;
+        }
         // 📝 REGISTRO EN BITÁCORA:
         if (nuevoEstado) {
             Bitacora::registrar("Inventario", "Producto reactivado", "Código " + codigo);
@@ -785,7 +831,8 @@ void VentanaInventario::abrirModalNuevoProducto() {
     modal.setAttribute(Qt::WA_TranslucentBackground);
 
     QWidget* fondoModal = new QWidget(&modal);
-    fondoModal->setStyleSheet("background-color: #fff8ee; border: 1.5px solid #f0d9b5; border-radius: 16px;");
+    fondoModal->setObjectName("fondoModal");
+    fondoModal->setStyleSheet(ESTILO_FONDO_MODAL);
 
     QGraphicsDropShadowEffect* sombra = new QGraphicsDropShadowEffect(&modal);
     sombra->setBlurRadius(20);
@@ -830,9 +877,10 @@ void VentanaInventario::abrirModalNuevoProducto() {
     txtCodigo.setValidator(new QRegularExpressionValidator(rxCodigo, &modal));
     txtCodigo.setPlaceholderText("Ej: 008 (solo números)");
 
-    // 🔒 2. BLOQUEO ESTRICTO: NOMBRE SOLO LETRAS, NÚMEROS Y ESPACIOS
-    QRegularExpression rxNombre("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]+$");
+    // 🔒 2. BLOQUEO ESTRICTO: NOMBRE SOLO LETRAS, NÚMEROS, ESPACIOS, PUNTO Y GUION (máximo 40 caracteres)
+    QRegularExpression rxNombre("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ .-]+$");
     txtNombre.setValidator(new QRegularExpressionValidator(rxNombre, &modal));
+    txtNombre.setMaxLength(40);
     txtNombre.setPlaceholderText("Ej: Natilla La Granja 400g");
 
     // 🔒 3. PRECIO Y STOCK: SpinBoxes bloquean físicamente cualquier letra
@@ -869,10 +917,10 @@ void VentanaInventario::abrirModalNuevoProducto() {
 
     connect(&btnAceptar, &QPushButton::clicked, [&]() {
         std::string cod = txtCodigo.text().trimmed().toStdString();
-        std::string nom = txtNombre.text().trimmed().toStdString();
+        std::string nom = txtNombre.text().simplified().toStdString();   // quita espacios de más
         std::string cat = cmbCategoria.currentText().toStdString();
 
-        
+
 
         double precio = spinPrecio.value();
         int stock = spinStock.value();
@@ -886,6 +934,12 @@ void VentanaInventario::abrirModalNuevoProducto() {
         // 2. Validación de código único
         if (!gestor->validarCodigoUnico(cod)) {
             mostrarAvisoPulpe(&modal, "⚠️ Código duplicado", "Ya existe un producto registrado con ese código único.", false);
+            return;
+        }
+
+        // 2.1 Validación de nombre único
+        if (!gestor->validarNombreUnico(nom)) {
+            mostrarAvisoPulpe(&modal, "⚠️ Nombre duplicado", "Ya existe un producto con ese nombre.", false);
             return;
         }
 
@@ -904,7 +958,10 @@ void VentanaInventario::abrirModalNuevoProducto() {
         Producto nuevo(cod, nom, cat, precio, stock);
 
         if (gestor->agregarProducto(nuevo)) {
-            gestor->guardarEnArchivo("productos.json");
+            if (!gestor->guardarEnArchivo("productos.json")) {
+                mostrarAvisoPulpe(&modal, "❌ Error", "No se pudo escribir en productos.json.", false);
+                return;
+            }
             // 📝 REGISTRO EN BITÁCORA:
             Bitacora::registrar("Inventario", "Producto creado", "Código " + cod + ", " + nom);
             actualizarVista();
