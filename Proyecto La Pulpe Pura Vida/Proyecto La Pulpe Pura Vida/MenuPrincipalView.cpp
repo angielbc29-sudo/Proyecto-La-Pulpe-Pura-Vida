@@ -322,7 +322,7 @@ void MenuPrincipalView::configurarVistaSegunRol()
 void MenuPrincipalView::abrirModulo(int idModulo)
 {
     // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos, 5 = Bitácora
-    // Inventario se abre en su propia ventana; los demás se muestran aquí mismo, como una página más
+    // Todos los módulos se muestran aquí mismo, como una página más del menú
 
     // Queda registrado en la bitácora a cuál módulo entró el usuario
     const char* nombresModulos[] = { "", "Inventario", "Ventas", "Historial", "Usuarios", "Bitácora" };
