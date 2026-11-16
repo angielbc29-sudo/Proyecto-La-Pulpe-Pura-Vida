@@ -13,12 +13,14 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
+#include <QStyle>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QTimer>
 #include <QVariant>
 #include <QVBoxLayout>
 
+#include "Bitacora.h"
 #include "Errores.h"
 #include "Formato.h"
 #include "Historial.h"
@@ -44,6 +46,17 @@ namespace
         if (centrado)
             item->setTextAlignment(Qt::AlignCenter);
         return item;
+    }
+
+    // Devuelve el texto en minúsculas y sin tildes, para que "cafe" encuentre "Café"
+    QString sinTildes(const QString& texto)
+    {
+        QString resultado;
+        const QString separado = texto.normalized(QString::NormalizationForm_D);
+        for (int i = 0; i < separado.size(); i++)
+            if (separado[i].category() != QChar::Mark_NonSpacing)
+                resultado += separado[i].toLower();
+        return resultado;
     }
 
     QHBoxLayout* crearFilaResumen(QWidget* padre, const QString& etiqueta, QLabel*& valor)
@@ -112,7 +125,7 @@ namespace
         QHBoxLayout* layoutBotones = new QHBoxLayout();
         layoutBotones->addStretch();
 
-        QPushButton* btnAceptar = new QPushButton(preguntar ? "Si, continuar" : "Aceptar", &dialogo);
+        QPushButton* btnAceptar = new QPushButton(preguntar ? "Sí, continuar" : "Aceptar", &dialogo);
         btnAceptar->setObjectName("dlgPrimario");
         btnAceptar->setCursor(Qt::PointingHandCursor);
         btnAceptar->setDefault(true);
@@ -133,84 +146,6 @@ namespace
         return dialogo.exec() == QDialog::Accepted;
     }
 
-    void mostrarVentaRegistrada(QWidget* padre, const VentasCobro& venta)
-    {
-        QDialog dialogo(padre);
-        dialogo.setWindowTitle("Venta registrada");
-        dialogo.setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-        dialogo.setModal(true);
-        dialogo.setMinimumWidth(420);
-        dialogo.setStyleSheet(hojaEstilosDialogo());
-
-        QVBoxLayout* layout = new QVBoxLayout(&dialogo);
-        layout->setContentsMargins(24, 22, 24, 20);
-        layout->setSpacing(12);
-
-        QLabel* lblTitulo = new QLabel("Venta registrada", &dialogo);
-        lblTitulo->setObjectName("dlgTitulo");
-        lblTitulo->setStyleSheet("color: #27ae60;");
-
-        QLabel* lblTexto = new QLabel(
-            "La venta N.º " + Formato::numero(venta.numero()) +
-            " se cobro y se guardo correctamente en el historial.", &dialogo);
-        lblTexto->setObjectName("dlgTexto");
-        lblTexto->setWordWrap(true);
-        lblTexto->setTextFormat(Qt::PlainText);
-
-        QFrame* tarjeta = new QFrame(&dialogo);
-        tarjeta->setObjectName("dlgTarjeta");
-        QVBoxLayout* layoutTarjeta = new QVBoxLayout(tarjeta);
-        layoutTarjeta->setContentsMargins(18, 14, 18, 14);
-        layoutTarjeta->setSpacing(8);
-
-        QLabel* lblEtiquetaTotal = new QLabel("Total cobrado", tarjeta);
-        lblEtiquetaTotal->setObjectName("dlgEtiqueta");
-
-        QLabel* lblTotal = new QLabel(Formato::colones(venta.total()), tarjeta);
-        lblTotal->setObjectName("dlgTotal");
-
-        layoutTarjeta->addWidget(lblEtiquetaTotal);
-        layoutTarjeta->addWidget(lblTotal);
-
-        QHBoxLayout* filaEfectivo = new QHBoxLayout();
-        QLabel* lblEfectivoEtiqueta = new QLabel("Efectivo recibido", tarjeta);
-        lblEfectivoEtiqueta->setObjectName("dlgEtiqueta");
-        QLabel* lblEfectivoValor = new QLabel(Formato::colones(venta.pago()), tarjeta);
-        lblEfectivoValor->setObjectName("dlgValor");
-        filaEfectivo->addWidget(lblEfectivoEtiqueta);
-        filaEfectivo->addStretch();
-        filaEfectivo->addWidget(lblEfectivoValor);
-
-        QHBoxLayout* filaCambio = new QHBoxLayout();
-        QLabel* lblCambioEtiqueta = new QLabel("Cambio", tarjeta);
-        lblCambioEtiqueta->setObjectName("dlgEtiqueta");
-        QLabel* lblCambioValor = new QLabel(Formato::colones(venta.cambio()), tarjeta);
-        lblCambioValor->setObjectName("dlgValor");
-        lblCambioValor->setStyleSheet("color: #27ae60;");
-        filaCambio->addWidget(lblCambioEtiqueta);
-        filaCambio->addStretch();
-        filaCambio->addWidget(lblCambioValor);
-
-        layoutTarjeta->addLayout(filaEfectivo);
-        layoutTarjeta->addLayout(filaCambio);
-
-        QHBoxLayout* layoutBotones = new QHBoxLayout();
-        layoutBotones->addStretch();
-
-        QPushButton* btnAceptar = new QPushButton("Aceptar", &dialogo);
-        btnAceptar->setObjectName("dlgPrimario");
-        btnAceptar->setCursor(Qt::PointingHandCursor);
-        btnAceptar->setDefault(true);
-        QObject::connect(btnAceptar, &QPushButton::clicked, &dialogo, &QDialog::accept);
-        layoutBotones->addWidget(btnAceptar);
-
-        layout->addWidget(lblTitulo);
-        layout->addWidget(lblTexto);
-        layout->addWidget(tarjeta);
-        layout->addLayout(layoutBotones);
-
-        dialogo.exec();
-    }
 }
 
 VentasWindow::VentasWindow(std::shared_ptr<Historial> historial, QWidget* parent)
@@ -234,6 +169,8 @@ VentasWindow::VentasWindow(std::shared_ptr<Historial> historial, QWidget* parent
     connect(listaResultados, &QListWidget::itemDoubleClicked, this, &VentasWindow::agregarResultadoSeleccionado);
     connect(btnVaciar, &QPushButton::clicked, this, &VentasWindow::vaciarCarrito);
     connect(btnCobrar, &QPushButton::clicked, this, &VentasWindow::cobrar);
+    connect(spinEfectivo, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        this, &VentasWindow::actualizarCambio);
 
     actualizarVista();
     actualizarResultadosBusqueda();
@@ -297,6 +234,18 @@ QWidget* VentasWindow::crearPanelPrincipal()
 
     layout->addWidget(barraSuperior);
 
+    // Aviso en pantalla (sustituye a las ventanas emergentes de error/exito).
+    bannerMensaje = new QFrame(panel);
+    bannerMensaje->setObjectName("bannerMensaje");
+    lblMensaje = new QLabel(bannerMensaje);
+    lblMensaje->setObjectName("lblMensaje");
+    lblMensaje->setWordWrap(true);
+    QHBoxLayout* layoutBanner = new QHBoxLayout(bannerMensaje);
+    layoutBanner->setContentsMargins(14, 10, 14, 10);
+    layoutBanner->addWidget(lblMensaje, 1);
+    bannerMensaje->hide();
+    layout->addWidget(bannerMensaje);
+
     // Cuerpo: busqueda y carrito a la izquierda, resumen y cobro a la derecha.
     QHBoxLayout* layoutCuerpo = new QHBoxLayout();
     layoutCuerpo->setSpacing(16);
@@ -315,7 +264,7 @@ QWidget* VentasWindow::crearPanelPrincipal()
     lblBuscar->setObjectName("lblSeccion");
 
     QLabel* lblAyuda = new QLabel(
-        "Escriba el codigo o el nombre y presione Enter. Doble clic en un resultado para agregarlo.",
+        "Escriba el código o el nombre y presione Enter. Doble clic en un resultado para agregarlo.",
         tarjetaBusqueda);
     lblAyuda->setObjectName("lblAyuda");
     lblAyuda->setWordWrap(true);
@@ -324,7 +273,7 @@ QWidget* VentasWindow::crearPanelPrincipal()
     layoutFilaBusqueda->setSpacing(8);
 
     txtBuscar = new QLineEdit(tarjetaBusqueda);
-    txtBuscar->setPlaceholderText("Codigo o nombre del producto...");
+    txtBuscar->setPlaceholderText("Código o nombre del producto...");
     txtBuscar->setClearButtonEnabled(true);
     txtBuscar->setMinimumHeight(38);
 
@@ -385,7 +334,7 @@ QWidget* VentasWindow::crearPanelPrincipal()
     tablaCarrito->setShowGrid(false);
 
     QLabel* lblAcciones = new QLabel(
-        "Use los botones +, − y × de cada linea para modificar el carrito.", tarjetaCarrito);
+        "Use los botones +, − y × de cada línea para modificar el carrito.", tarjetaCarrito);
     lblAcciones->setObjectName("lblAyuda");
 
     layoutCarrito->addLayout(layoutTituloCarrito);
@@ -502,6 +451,10 @@ void VentasWindow::aplicarEstilos()
         "QLabel#lblTotalEtiqueta { font-size: 11px; font-weight: bold; color: #8a6a4f; }"
         "QLabel#lblTotalGrande { font-size: 32px; font-weight: 900; color: #e67e22; }"
         "QFrame#barraSuperior { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }"
+        "QFrame#bannerMensaje { background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; }"
+        "QFrame#bannerMensaje[tipo=\"error\"] { background-color: #fdecea; border: 1px solid #e6a59c; }"
+        "QLabel#lblMensaje { color: #1e8449; font-weight: bold; background: transparent; }"
+        "QLabel#lblMensaje[tipo=\"error\"] { color: #c0392b; }"
         "QFrame#tarjetaPanel { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }"
         "QFrame#tarjetaResumen { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }"
         "QFrame#tarjetaCobro { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }"
@@ -562,13 +515,55 @@ void VentasWindow::actualizarVista()
     const bool hayLineas = !controlador_.carritoVacio();
     btnCobrar->setEnabled(hayLineas);
     btnVaciar->setEnabled(hayLineas);
+    actualizarCambio();
+}
+
+// [VENTAS] Muestra el cambio estimado segun el efectivo escrito.
+void VentasWindow::actualizarCambio()
+{
+    if (controlador_.carritoVacio())
+    {
+        lblCambio->setText("Cambio: —");
+        return;
+    }
+
+    const double efectivo = spinEfectivo->value();
+    const double total = controlador_.total();
+    if (efectivo < total)
+    {
+        lblCambio->setText("Cambio: —");
+        return;
+    }
+
+    lblCambio->setText("Cambio: " + Formato::colones(efectivo - total));
+}
+
+// [VENTAS] Muestra un aviso dentro de la ventana (verde exito / rojo error).
+void VentasWindow::mostrarMensaje(const QString& texto, bool esError)
+{
+    lblMensaje->setText(texto);
+
+    const QString tipo = esError ? "error" : "exito";
+    bannerMensaje->setProperty("tipo", tipo);
+    lblMensaje->setProperty("tipo", tipo);
+    bannerMensaje->style()->unpolish(bannerMensaje);
+    bannerMensaje->style()->polish(bannerMensaje);
+    lblMensaje->style()->unpolish(lblMensaje);
+    lblMensaje->style()->polish(lblMensaje);
+
+    bannerMensaje->show();
+}
+
+void VentasWindow::ocultarMensaje()
+{
+    bannerMensaje->hide();
 }
 
 // [VENTAS] Llena la lista de resultados con los productos activos que
 // coinciden con el texto buscado (codigo o nombre).
 void VentasWindow::actualizarResultadosBusqueda()
 {
-    const QString filtro = txtBuscar->text().trimmed();
+    const QString filtro = sinTildes(txtBuscar->text().trimmed());
     listaResultados->clear();
 
     const std::vector<Producto> productos = inventario_->getProductosActivos();
@@ -580,8 +575,8 @@ void VentasWindow::actualizarResultadosBusqueda()
         const QString nombre = QString::fromStdString(producto.getNombre());
 
         if (!filtro.isEmpty()
-            && !codigo.contains(filtro, Qt::CaseInsensitive)
-            && !nombre.contains(filtro, Qt::CaseInsensitive))
+            && !sinTildes(codigo).contains(filtro)
+            && !sinTildes(nombre).contains(filtro))
             continue;
 
         QString detalle = codigo + "  ·  " + nombre + "  ·  " + Formato::colones(producto.getPrecio());
@@ -633,16 +628,16 @@ void VentasWindow::agregarAlCarrito()
 
     if (texto.isEmpty())
     {
-        mostrarDialogo(this, "Buscar producto",
-            "Escriba el codigo o el nombre del producto, o seleccione un resultado de la lista.",
-            false, false);
+        mostrarMensaje(
+            "Escriba el código o el nombre del producto, o seleccione un resultado de la lista.",
+            false);
         txtBuscar->setFocus();
         return;
     }
 
-    mostrarDialogo(this, "Producto no encontrado",
-        "No hay productos que coincidan con \"" + texto + "\". Verifique el codigo o el nombre.",
-        true, false);
+    mostrarMensaje(
+        "No hay productos que coincidan con \"" + texto + "\". Verifique el código o el nombre.",
+        true);
     txtBuscar->selectAll();
     txtBuscar->setFocus();
 }
@@ -661,19 +656,25 @@ void VentasWindow::agregarProducto(const std::string& codigo)
     Producto* producto = inventario_->buscarPorCodigo(codigo);
     if (producto == nullptr)
     {
-        mostrarDialogo(this, "Producto no encontrado",
-            "No existe un producto con ese codigo.", true, false);
+        mostrarMensaje("No existe un producto con ese código.", true);
+        return;
+    }
+
+    if (!producto->getActivo())
+    {
+        mostrarMensaje("\"" + QString::fromStdString(producto->getNombre()) +
+            "\" está desactivado y no se puede vender.", true);
         return;
     }
 
     if (!controlador_.agregarProducto(codigo))
     {
-        mostrarDialogo(this, "Stock insuficiente",
-            "No hay mas unidades disponibles de \"" +
-            QString::fromStdString(producto->getNombre()) + "\".", true, false);
+        mostrarMensaje("No hay más unidades disponibles de \"" +
+            QString::fromStdString(producto->getNombre()) + "\".", true);
         return;
     }
 
+    ocultarMensaje();
     actualizarVista();
     actualizarResultadosBusqueda();
     txtBuscar->setFocus();
@@ -737,16 +738,23 @@ QWidget* VentasWindow::crearAccionesFila(const std::string& codigo)
 void VentasWindow::agregarUnidad(const std::string& codigo)
 {
     Producto* producto = inventario_->buscarPorCodigo(codigo);
+    if (producto != nullptr && !producto->getActivo())
+    {
+        mostrarMensaje("\"" + QString::fromStdString(producto->getNombre()) +
+            "\" está desactivado y no se puede vender.", true);
+        return;
+    }
+
     if (!controlador_.agregarProducto(codigo))
     {
         const QString nombre = producto != nullptr
             ? QString::fromStdString(producto->getNombre())
             : QString::fromStdString(codigo);
-        mostrarDialogo(this, "Stock insuficiente",
-            "No hay mas unidades disponibles de \"" + nombre + "\".", true, false);
+        mostrarMensaje("No hay más unidades disponibles de \"" + nombre + "\".", true);
         return;
     }
 
+    ocultarMensaje();
     // Se refresca despues de que el boton termine de procesar el clic.
     QTimer::singleShot(0, this, &VentasWindow::actualizarVista);
 }
@@ -775,6 +783,7 @@ void VentasWindow::vaciarCarrito()
     {
         controlador_.vaciarCarrito();
         actualizarVista();
+        ocultarMensaje();
     }
 }
 
@@ -791,17 +800,22 @@ void VentasWindow::cobrar()
     std::string error;
     if (!controlador_.cobrar(efectivo, &error))
     {
-        mostrarDialogo(this, "No se pudo cobrar", QString::fromStdString(error), true, false);
+        mostrarMensaje(QString::fromStdString(error), true);
         return;
     }
 
     const VentasCobro venta = controlador_.ventaCobrada();
-    lblCambio->setText("Cambio: " + Formato::colones(venta.cambio()));
+
+    Bitacora::registrar("Ventas", "Venta cobrada",
+        "Venta N.º " + std::to_string(venta.numero()) +
+        ", total ₡" + std::to_string(static_cast<long long>(venta.total())));
+
     spinEfectivo->setValue(0.0);
     actualizarVista();
     actualizarResultadosBusqueda();
+    lblCambio->setText("Cambio: " + Formato::colones(venta.cambio()));
+    mostrarMensaje("Venta N.º " + Formato::numero(venta.numero()) +
+        " cobrada correctamente. Total " + Formato::colones(venta.total()) +
+        " · Cambio " + Formato::colones(venta.cambio()), false);
     txtBuscar->setFocus();
-
-    // [VENTAS] El controlador ya desconto el stock y registro la venta.
-    mostrarVentaRegistrada(this, venta);
 }
