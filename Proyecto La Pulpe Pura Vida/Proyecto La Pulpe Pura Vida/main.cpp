@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QEventLoop>
 
+#include "Bitacora.h"
 #include "LoginDialog.h"
 #include "MenuPrincipalView.h"
 #include "ServicioAutenticacion.h"
@@ -33,7 +34,9 @@ int main(int argc, char* argv[])
 
         if (menu.result() != QDialog::Accepted)
         {
-            break;   // cerró la ventana con la X: el programa termina
+            // Cerró la ventana con la X: también queda en la bitácora, y el programa termina
+            Bitacora::registrar("Sesión", "Cierre del programa");
+            break;
         }
         // Si presionó "Cerrar Sesión", el menú termina con Accepted y se vuelve al login
     }

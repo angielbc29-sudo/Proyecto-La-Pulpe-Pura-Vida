@@ -4,8 +4,10 @@
 #include <QWidget>
 
 class IUsuarioRepository;
+class QComboBox;
 class QFrame;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QTableWidget;
 class Usuario;
@@ -23,6 +25,11 @@ private:
     QPushButton* btnVolver;
     QPushButton* btnRegistrar;
 
+    // Filtros para encontrar un usuario más rápido
+    QLineEdit* txtBuscar;
+    QComboBox* cmbRol;
+    QComboBox* cmbEstado;
+
     // Aviso dentro de la pantalla (pregunta antes de desactivar o muestra el resultado)
     QFrame* aviso;
     QLabel* lblAviso;
@@ -33,7 +40,7 @@ private:
     // Fondo oscuro que cubre la ventana mientras el registro está abierto
     QWidget* fondoRegistro;
 
-    // Vuelve a llenar la tabla con los usuarios guardados
+    // Vuelve a llenar la tabla con los usuarios guardados que cumplen los filtros
     void cargarTablaUsuarios();
 
     // Busca un usuario guardado por su id (nullptr si no existe)
