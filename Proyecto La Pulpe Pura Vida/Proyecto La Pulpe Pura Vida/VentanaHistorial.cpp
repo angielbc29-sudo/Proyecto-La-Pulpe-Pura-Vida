@@ -1,5 +1,6 @@
 #include "VentanaHistorial.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSignalBlocker>
 #include <QStackedWidget>
 #include <QStyle>
 #include <QTableWidget>
@@ -24,11 +26,13 @@
 #include <QTextBrowser>
 #include <QVBoxLayout>
 
+#include "Bitacora.h"
 #include "Errores.h"
 #include "Formato.h"
 #include "Historial.h"
 #include "Linea.h"
 #include "TicketHtml.h"
+#include "TicketPdf.h"
 #include "TicketTxt.h"
 
 namespace
@@ -68,6 +72,15 @@ namespace
         layout->addWidget(lblDetalle);
         return tarjeta;
     }
+
+    std::unique_ptr<Ticket> crearTicket(const QString& formato)
+    {
+        if (formato == "PDF")
+            return std::make_unique<TicketPdf>("La Pulpe");
+        if (formato == "HTML")
+            return std::make_unique<TicketHtml>("La Pulpe");
+        return std::make_unique<TicketTxt>("La Pulpe");
+    }
 }
 
 VentanaHistorial::VentanaHistorial(std::shared_ptr<Historial> historial, QWidget* parent)
@@ -100,6 +113,12 @@ VentanaHistorial::VentanaHistorial(std::shared_ptr<Historial> historial, QWidget
     connect(btnFiltrar, &QPushButton::clicked, this, &VentanaHistorial::aplicarFiltro);
     connect(btnLimpiar, &QPushButton::clicked, this, &VentanaHistorial::limpiarFiltros);
     connect(txtBuscar, &QLineEdit::returnPressed, this, &VentanaHistorial::aplicarFiltro);
+    connect(fechaDesde, &QDateEdit::dateChanged, this, [this](const QDate&) {
+        if (fechaDesde->date() <= fechaHasta->date()) aplicarFiltro();
+        });
+    connect(fechaHasta, &QDateEdit::dateChanged, this, [this](const QDate&) {
+        if (fechaDesde->date() <= fechaHasta->date()) aplicarFiltro();
+        });
 
     connect(btnVolverHistorial, &QPushButton::clicked, this, [this]()
         {
@@ -164,10 +183,12 @@ void VentanaHistorial::construirPaginaHistorial()
     fechaDesde = new QDateEdit(paginaHistorial);
     fechaDesde->setCalendarPopup(true);
     fechaDesde->setDisplayFormat("dd/MM/yyyy");
+    fechaDesde->setMinimumWidth(170);
 
     fechaHasta = new QDateEdit(paginaHistorial);
     fechaHasta->setCalendarPopup(true);
     fechaHasta->setDisplayFormat("dd/MM/yyyy");
+    fechaHasta->setMinimumWidth(170);
 
     btnFiltrar = new QPushButton("Filtrar", paginaHistorial);
     btnFiltrar->setObjectName("btnFiltrar");
@@ -260,7 +281,7 @@ void VentanaHistorial::construirPaginaDetalle()
 
     QLabel* lblFormato = new QLabel("Formato:", paginaDetalle);
     cmbFormato = new QComboBox(paginaDetalle);
-    cmbFormato->addItems({ "TXT", "HTML" });
+    cmbFormato->addItems({ "PDF", "TXT", "HTML" });
 
     QHBoxLayout* layoutFormato = new QHBoxLayout();
     layoutFormato->setSpacing(8);
@@ -444,8 +465,12 @@ void VentanaHistorial::aplicarEstilos()
         QPushButton#btnVerTicket:hover { background-color: #e67e22; color: #ffffff; }
         QPushButton#btnReintentarImpresion { background-color: #c0392b; color: #ffffff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: bold; }
         QPushButton#btnReintentarImpresion:hover { background-color: #a93226; }
-        QLineEdit, QDateEdit, QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 10px; }
-        QLineEdit:focus, QDateEdit:focus, QComboBox:focus { border: 1px solid #e67e22; }
+       QLineEdit, QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 10px; }
+        QLineEdit:focus, QComboBox:focus { border: 1px solid #e67e22; }
+        QDateEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 34px 7px 10px; }
+        QDateEdit:focus { border: 1px solid #e67e22; }
+        QDateEdit::drop-down { border: none; width: 30px; }
+        QDateEdit::down-arrow { image: url(:/ProyectoLaPulpePuraVida/flecha_abajo.png); width: 12px; height: 12px; }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
         QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
         QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
@@ -478,6 +503,8 @@ void VentanaHistorial::cargarHistorial()
 
     try
     {
+        const QSignalBlocker bloqueoDesde(fechaDesde);
+        const QSignalBlocker bloqueoHasta(fechaHasta);
         const std::vector<VentasCobro> ventas = historial_->listar();
 
         if (ventas.empty())
@@ -653,16 +680,16 @@ void VentanaHistorial::actualizarVistaPrevia()
     if (!historial_ || !hayVentaActual_)
         return;
 
-    if (cmbFormato->currentText() == "HTML")
-    {
-        TicketHtml ticket("La Pulpe");
-        vistaPrevia->setHtml(historial_->generar(ventaActual_, ticket));
-    }
-    else
+    if (cmbFormato->currentText() == "TXT")
     {
         TicketTxt ticket("La Pulpe");
         vistaPrevia->setPlainText(historial_->generar(ventaActual_, ticket));
         vistaPrevia->setFont(QFont("Courier New", 10));
+    }
+    else
+    {
+        TicketHtml ticket("La Pulpe");
+        vistaPrevia->setHtml(historial_->generar(ventaActual_, ticket));
     }
 }
 
@@ -673,8 +700,8 @@ void VentanaHistorial::imprimirTicket()
 
     try
     {
-        const bool html = (cmbFormato->currentText() == "HTML");
-        const QString extension = html ? "html" : "txt";
+        const QString formato = cmbFormato->currentText();
+        const QString extension = formato.toLower();
         const QString carpeta = "tickets";
 
         if (!QDir().mkpath(carpeta))
@@ -683,19 +710,15 @@ void VentanaHistorial::imprimirTicket()
         const QString ruta = carpeta + "/ticket_" +
             Formato::numero(ventaActual_.numero()) + "." + extension;
 
-        if (html)
-        {
-            TicketHtml ticket("La Pulpe");
-            historial_->imprimir(ventaActual_, ticket, ruta);
-        }
-        else
-        {
-            TicketTxt ticket("La Pulpe");
-            historial_->imprimir(ventaActual_, ticket, ruta);
-        }
+        const std::unique_ptr<Ticket> ticket = crearTicket(formato);
+        historial_->imprimir(ventaActual_, *ticket, ruta);
+
+        Bitacora::registrar("Historial", "Comprobante generado",
+            "Venta N.º " + std::to_string(ventaActual_.numero()) +
+            " en " + formato.toStdString());
 
         mostrarMensaje("Ticket / factura N.º " + Formato::numero(ventaActual_.numero()) +
-            " generado en formato " + extension.toUpper() + " — la venta no cambió.",
+            " generado en formato " + formato + " — la venta no cambió.",
             "exito");
         btnImprimir->setText("Imprimir de nuevo");
     }
@@ -712,10 +735,11 @@ void VentanaHistorial::guardarCopia()
     if (!historial_ || !hayVentaActual_)
         return;
 
-    const bool html = (cmbFormato->currentText() == "HTML");
-    const QString filtro = html ? "Ticket HTML (*.html)" : "Ticket TXT (*.txt)";
+    const QString formato = cmbFormato->currentText();
+    const QString extension = formato.toLower();
+    const QString filtro = "Ticket " + formato + " (*." + extension + ")";
     const QString nombreSugerido = "ticket_" +
-        Formato::numero(ventaActual_.numero()) + (html ? ".html" : ".txt");
+        Formato::numero(ventaActual_.numero()) + "." + extension;
 
     const QString ruta = QFileDialog::getSaveFileName(
         this, "Guardar copia del ticket", nombreSugerido, filtro);
@@ -725,16 +749,12 @@ void VentanaHistorial::guardarCopia()
 
     try
     {
-        if (html)
-        {
-            TicketHtml ticket("La Pulpe");
-            historial_->imprimir(ventaActual_, ticket, ruta);
-        }
-        else
-        {
-            TicketTxt ticket("La Pulpe");
-            historial_->imprimir(ventaActual_, ticket, ruta);
-        }
+        const std::unique_ptr<Ticket> ticket = crearTicket(formato);
+        historial_->imprimir(ventaActual_, *ticket, ruta);
+
+        Bitacora::registrar("Historial", "Comprobante generado",
+            "Venta N.º " + std::to_string(ventaActual_.numero()) +
+            " en " + formato.toStdString());
 
         mostrarMensaje("Copia guardada correctamente en: " + ruta, "exito", false);
     }
