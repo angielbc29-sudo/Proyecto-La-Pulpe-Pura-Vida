@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QFrame>
 #include <QIcon>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPainter>
@@ -14,7 +15,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "ServicioAutentication.h"
+#include "Bitacora.h"
+#include "ServicioAutenticacion.h"
 #include "Sesion.h"
 #include "Usuario.h"
 
@@ -196,10 +198,24 @@ void LoginDialog::onBotonIniciarSesionClicked()
     {
         // Se guarda quién entró y se cierra el login con resultado "aceptado"
         Sesion::getInstancia().iniciar(usuario);
+        Bitacora::registrar("Sesión", "Inicio de sesión");
         accept();
     }
     else
     {
+        // El intento fallido también queda en la bitácora (nunca se guarda la contraseña)
+        std::string motivo = "contraseña incorrecta";
+        if (resultado == ResultadoLogin::USUARIO_NO_EXISTE)
+        {
+            motivo = "el usuario no existe";
+        }
+        else if (resultado == ResultadoLogin::CUENTA_DESACTIVADA)
+        {
+            motivo = "cuenta desactivada";
+        }
+        Bitacora::registrar("Sesión", "Intento de inicio de sesión fallido",
+            "Usuario escrito: " + user + " (" + motivo + ")");
+
         mostrarAlertaError(resultado);
         txtPassword->clear();
     }
@@ -224,4 +240,17 @@ void LoginDialog::mostrarAlertaError(ResultadoLogin resultado)
     }
 
     lblError->show();
+}
+
+// ---------------- Eventos ----------------
+
+void LoginDialog::keyPressEvent(QKeyEvent* evento)
+{
+    // En un QDialog, Esc cierra la ventana (y con eso todo el programa); en el login se ignora
+    if (evento->key() == Qt::Key_Escape)
+    {
+        return;
+    }
+
+    QDialog::keyPressEvent(evento);
 }

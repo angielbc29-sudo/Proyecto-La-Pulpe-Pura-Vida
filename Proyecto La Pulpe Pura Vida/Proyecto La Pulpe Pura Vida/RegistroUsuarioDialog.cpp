@@ -25,6 +25,7 @@
 
 #include "Administrador.h"
 #include "Auditor.h"
+#include "Bitacora.h"
 #include "Cajero.h"
 #include "IUsuarioRepository.h"
 #include "Turno.h"
@@ -150,10 +151,10 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     txtNombre->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ]*"), txtNombre));   // solo letras y espacios
 
     txtCedula = new QLineEdit(this);
-    txtCedula->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"), txtCedula));       // solo dígitos
+    txtCedula->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,9}"), txtCedula));   // solo dígitos, máximo 9
 
     txtTelefono = new QLineEdit(this);
-    txtTelefono->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"), txtTelefono));   // solo dígitos
+    txtTelefono->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,8}"), txtTelefono));   // solo dígitos, máximo 8
 
     cmbRol = new QComboBox(this);
     cmbRol->addItem("Cajero");
@@ -167,7 +168,7 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     cmbTurno->addItem("Completo", static_cast<int>(Turno::COMPLETO));
 
     txtUsuario = new QLineEdit(this);
-    txtUsuario->setValidator(new QRegularExpressionValidator(QRegularExpression("\\S*"), txtUsuario));       // sin espacios
+    txtUsuario->setValidator(new QRegularExpressionValidator(QRegularExpression("[A-Za-z0-9._-]*"), txtUsuario));   // sin espacios, tildes ni ñ
 
     txtPassword = new QLineEdit(this);
     agregarOjo(txtPassword);
@@ -212,12 +213,12 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
     QGridLayout* grid = new QGridLayout();
     grid->setHorizontalSpacing(16);
     grid->setVerticalSpacing(8);
-    grid->addWidget(crearCampo(this, "Nombre Completo *", "(Solo letras)", txtNombre), 0, 0, 1, 2);
-    grid->addWidget(crearCampo(this, "Número de Cédula *", "(Solo dígitos)", txtCedula), 1, 0);
-    grid->addWidget(crearCampo(this, "Número de Teléfono *", "(Solo números)", txtTelefono), 1, 1);
+    grid->addWidget(crearCampo(this, "Nombre Completo *", "(Nombre y apellido, solo letras)", txtNombre), 0, 0, 1, 2);
+    grid->addWidget(crearCampo(this, "Número de Cédula *", "(9 dígitos)", txtCedula), 1, 0);
+    grid->addWidget(crearCampo(this, "Número de Teléfono *", "(8 dígitos)", txtTelefono), 1, 1);
     grid->addWidget(crearCampo(this, "Rol *", "", cmbRol), 2, 0);
     grid->addWidget(campoTurno, 2, 1);
-    grid->addWidget(crearCampo(this, "Nombre de Usuario deseado *", "(Sin espacios)", txtUsuario), 3, 0, 1, 2);
+    grid->addWidget(crearCampo(this, "Nombre de Usuario deseado *", "(Sin espacios ni tildes)", txtUsuario), 3, 0, 1, 2);
     grid->addWidget(crearCampo(this, "Contraseña *", "(Mínimo 4 caracteres)", txtPassword), 4, 0);
     grid->addWidget(crearCampo(this, "Confirmar Contraseña *", "", txtConfirmar), 4, 1);
     grid->setColumnStretch(0, 1);
@@ -290,17 +291,21 @@ bool RegistroUsuarioDialog::validarFormulario()
     {
         error = "El nombre completo solo puede contener letras.";
     }
-    else if (!QRegularExpression("^[0-9]+$").match(cedula).hasMatch())
+    else if (nombre.split(' ', Qt::SkipEmptyParts).size() < 2)
     {
-        error = "La cédula solo puede contener dígitos.";
+        error = "Escriba el nombre y al menos un apellido.";
     }
-    else if (!QRegularExpression("^[0-9]+$").match(telefono).hasMatch())
+    else if (!QRegularExpression("^[0-9]{9}$").match(cedula).hasMatch())
     {
-        error = "El teléfono solo puede contener números.";
+        error = "La cédula debe tener exactamente 9 dígitos.";
     }
-    else if (usuario.contains(' '))
+    else if (!QRegularExpression("^[0-9]{8}$").match(telefono).hasMatch())
     {
-        error = "El nombre de usuario no puede tener espacios.";
+        error = "El teléfono debe tener exactamente 8 dígitos.";
+    }
+    else if (!QRegularExpression("^[A-Za-z0-9._-]+$").match(usuario).hasMatch())
+    {
+        error = "El nombre de usuario solo puede tener letras sin tilde, números, punto o guion.";
     }
     else if (repo->buscarPorUsername(usuario.toStdString()) != nullptr)
     {
@@ -313,6 +318,25 @@ bool RegistroUsuarioDialog::validarFormulario()
     else if (password != confirma)
     {
         error = "Las contraseñas no coinciden.";
+    }
+
+    // La cédula y el teléfono no se pueden repetir (se comparan solo los dígitos, sin los guiones)
+    if (error.isEmpty())
+    {
+        std::vector<std::shared_ptr<Usuario>> todos = repo->obtenerTodos();
+        for (size_t i = 0; i < todos.size(); i++)
+        {
+            if (QString::fromStdString(todos[i]->getCedula()).remove('-') == cedula)
+            {
+                error = "Ya existe un usuario registrado con esa cédula.";
+                break;
+            }
+            if (QString::fromStdString(todos[i]->getTelefono()).remove('-') == telefono)
+            {
+                error = "Ya existe un usuario registrado con ese número de teléfono.";
+                break;
+            }
+        }
     }
 
     if (!error.isEmpty())
@@ -354,8 +378,13 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
     }
 
     std::string nombre = txtNombre->text().trimmed().toStdString();
-    std::string cedula = txtCedula->text().trimmed().toStdString();
-    std::string telefono = txtTelefono->text().trimmed().toStdString();
+
+    // La cédula y el teléfono se guardan con guiones, igual que los usuarios que ya existen:
+    // 1-1111-1111 y 8888-1111
+    QString textoCedula = txtCedula->text().trimmed();
+    QString textoTelefono = txtTelefono->text().trimmed();
+    std::string cedula = (textoCedula.left(1) + "-" + textoCedula.mid(1, 4) + "-" + textoCedula.mid(5)).toStdString();
+    std::string telefono = (textoTelefono.left(4) + "-" + textoTelefono.mid(4)).toStdString();
     std::string usuario = txtUsuario->text().toStdString();
     std::string hash = cifrarSha256(txtPassword->text().toStdString());
 
@@ -377,6 +406,8 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
 
     if (repo->guardar(nuevo))
     {
+        Bitacora::registrar("Usuarios", "Usuario registrado",
+            "Usuario: " + usuario + " (" + nombre + "), rol: " + nuevo->getNombreRol());
         accept();   // cierra el formulario con resultado "aceptado": se pudo guardar
     }
     else

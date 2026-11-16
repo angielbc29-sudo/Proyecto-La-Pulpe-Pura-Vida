@@ -37,6 +37,12 @@ namespace
         if (texto == "COMPLETO") return Turno::COMPLETO;
         return Turno::MANANA;
     }
+
+    // Dos nombres de usuario son el mismo aunque cambien las mayúsculas ("carlosm" y "CarlosM")
+    bool mismoUsername(const std::string& a, const std::string& b)
+    {
+        return QString::fromStdString(a).compare(QString::fromStdString(b), Qt::CaseInsensitive) == 0;
+    }
 }
 
 // ---------------- Constructor ----------------
@@ -77,7 +83,7 @@ std::shared_ptr<Usuario> UsuarioJsonRepository::buscarPorUsername(std::string us
 
     for (size_t i = 0; i < lista.size(); i++)
     {
-        if (lista[i]->getUsername() == user)
+        if (mismoUsername(lista[i]->getUsername(), user))
         {
             return lista[i];
         }
@@ -92,7 +98,7 @@ bool UsuarioJsonRepository::guardar(std::shared_ptr<Usuario> u)
     // No se permite repetir el nombre de usuario
     for (size_t i = 0; i < lista.size(); i++)
     {
-        if (lista[i]->getUsername() == u->getUsername())
+        if (mismoUsername(lista[i]->getUsername(), u->getUsername()))
         {
             return false;
         }

@@ -5,7 +5,6 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
-#include <QMessageBox>
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -26,6 +25,7 @@
 #include "UsuarioJsonRepository.h"
 #include "GestionUsuariosView.h"
 #include "BitacoraView.h"
+#include "Bitacora.h"
 
 // ---------------- Función auxiliar (solo se usa en este archivo) ----------------
 
@@ -177,7 +177,7 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
     layoutPrincipal->addWidget(paginas, 1);
     setLayout(layoutPrincipal);
 
-    setMinimumSize(900, 600);
+    setMinimumSize(1040, 620);   // ancho suficiente para que las tablas de los módulos no se aprieten
 
     // Hoja de estilos (colores y formas)
     setStyleSheet(R"(
@@ -299,8 +299,16 @@ void MenuPrincipalView::configurarVistaSegunRol()
     {
         if (usuarioActivo->tienePermiso(m.permiso))
         {
-            // Se acomodan por filas, sin dejar huecos
-            gridModulos->addWidget(m.boton, posicion / columnas, posicion % columnas);
+            // Se acomodan por filas, sin dejar huecos.
+            // Si solo hay una tarjeta (el auditor), ocupa todo el ancho para que no quede media pantalla vacía
+            if (visibles == 1)
+            {
+                gridModulos->addWidget(m.boton, 0, 0, 1, columnas);
+            }
+            else
+            {
+                gridModulos->addWidget(m.boton, posicion / columnas, posicion % columnas);
+            }
             m.boton->show();
             posicion++;
         }
@@ -314,8 +322,15 @@ void MenuPrincipalView::configurarVistaSegunRol()
 void MenuPrincipalView::abrirModulo(int idModulo)
 {
     // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos, 5 = Bitácora
-    // Por ahora solo muestra un aviso. Cuando cada módulo tenga su ventana,
-    // aquí se crea y se muestra (por ejemplo: VentasCobro* v = new VentasCobro(); v->show();)
+    // Inventario se abre en su propia ventana; los demás se muestran aquí mismo, como una página más
+
+    // Queda registrado en la bitácora a cuál módulo entró el usuario
+    const char* nombresModulos[] = { "", "Inventario", "Ventas", "Historial", "Usuarios", "Bitácora" };
+    if (idModulo >= 1 && idModulo <= 5)
+    {
+        Bitacora::registrar(nombresModulos[idModulo], "Ingreso al módulo");
+    }
+
     switch (idModulo)
     {
     case 1:
@@ -434,6 +449,9 @@ void MenuPrincipalView::onBotonCerrarSesionClicked()
             ventana->close();
         }
     }
+
+    // Se registra antes de cerrar la sesión, para que quede el nombre del usuario
+    Bitacora::registrar("Sesión", "Cierre de sesión");
 
     Sesion::getInstancia().cerrar();
     accept();   // cierra el menú con resultado "aceptado": main vuelve a mostrar el login

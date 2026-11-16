@@ -3,6 +3,7 @@
 #include <QDialog>
 #include "ResultadoLogin.h"
 
+class QKeyEvent;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -26,6 +27,10 @@ private:
 
 private slots:
     void onBotonIniciarSesionClicked();
+
+protected:
+    // Evita que la tecla Esc cierre el login (y con eso todo el programa)
+    void keyPressEvent(QKeyEvent* evento) override;
 
 public:
     explicit LoginDialog(ServicioAutenticacion* auth, QWidget* parent = nullptr);
