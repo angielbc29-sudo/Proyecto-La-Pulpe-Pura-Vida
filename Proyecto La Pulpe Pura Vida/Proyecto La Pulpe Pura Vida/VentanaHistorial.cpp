@@ -164,10 +164,12 @@ void VentanaHistorial::construirPaginaHistorial()
     fechaDesde = new QDateEdit(paginaHistorial);
     fechaDesde->setCalendarPopup(true);
     fechaDesde->setDisplayFormat("dd/MM/yyyy");
+    fechaDesde->setMinimumWidth(130);
 
     fechaHasta = new QDateEdit(paginaHistorial);
     fechaHasta->setCalendarPopup(true);
     fechaHasta->setDisplayFormat("dd/MM/yyyy");
+    fechaHasta->setMinimumWidth(130);
 
     btnFiltrar = new QPushButton("Filtrar", paginaHistorial);
     btnFiltrar->setObjectName("btnFiltrar");
@@ -444,8 +446,19 @@ void VentanaHistorial::aplicarEstilos()
         QPushButton#btnVerTicket:hover { background-color: #e67e22; color: #ffffff; }
         QPushButton#btnReintentarImpresion { background-color: #c0392b; color: #ffffff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: bold; }
         QPushButton#btnReintentarImpresion:hover { background-color: #a93226; }
-        QLineEdit, QDateEdit, QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 10px; }
-        QLineEdit:focus, QDateEdit:focus, QComboBox:focus { border: 1px solid #e67e22; }
+       QLineEdit, QComboBox { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 10px; }
+        QLineEdit:focus, QComboBox:focus { border: 1px solid #e67e22; }
+        QDateEdit { background-color: #ffffff; border: 1px solid #e0c9a6; border-radius: 7px; padding: 7px 32px 7px 10px; }
+        QDateEdit:focus { border: 1px solid #e67e22; }
+        QDateEdit::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: center right;
+            width: 26px;
+            border-left: 1px solid #e0c9a6;
+            background: #fff3e0;
+            border-top-right-radius: 7px;
+            border-bottom-right-radius: 7px;
+        }
         QTableWidget { background-color: #ffffff; border: 1px solid #f0d9b5; border-radius: 12px; }
         QTableWidget::item { border-bottom: 1px solid #f3e6d0; padding: 6px; }
         QHeaderView::section { background-color: #fff3e0; color: #7a6650; font-weight: bold; border: none; border-bottom: 1px solid #f0d9b5; padding: 10px; }
