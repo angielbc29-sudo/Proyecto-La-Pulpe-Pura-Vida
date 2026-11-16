@@ -51,7 +51,7 @@ UsuarioJsonRepository::UsuarioJsonRepository(std::string ruta)
 {
     this->rutaArchivo = ruta;
 
-    // Si el archivo todavía no existe, se crea con los tres usuarios de prueba
+    // Si el archivo todavía no existe, se crea con los cuatro usuarios de prueba
     if (!QFile::exists(QString::fromStdString(rutaArchivo)))
     {
         std::vector<std::shared_ptr<Usuario>> iniciales;
@@ -65,6 +65,10 @@ UsuarioJsonRepository::UsuarioJsonRepository(std::string ruta)
         // Pedro tiene la cuenta inactiva (para probar el mensaje de acceso denegado)
         iniciales.push_back(std::make_shared<Cajero>(
             3, "pedror", HASH_PRUEBA, "Pedro Rojas", "3-3333-3333", "8888-3333", false, Turno::TARDE));
+
+        // Laura es la auditora: solo consulta la bitácora con todos los movimientos del sistema
+        iniciales.push_back(std::make_shared<Auditor>(
+            4, "laurav", HASH_PRUEBA, "Laura Vargas", "4-4444-4444", "8888-4444", true));
 
         serializar(iniciales);
     }
