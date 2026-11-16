@@ -630,7 +630,7 @@ void VentasWindow::agregarAlCarrito()
     {
         mostrarMensaje(
             "Escriba el código o el nombre del producto, o seleccione un resultado de la lista.",
-            false);
+            true);
         txtBuscar->setFocus();
         return;
     }
