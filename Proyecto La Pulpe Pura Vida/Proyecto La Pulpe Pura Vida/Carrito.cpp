@@ -1,5 +1,7 @@
 #include "Carrito.h"
 
+#include <cmath>
+
 #include <QString>
 
 #include "VentasCobro.h"   // [VENTAS] tasa de IVA compartida
@@ -74,7 +76,7 @@ double Carrito::subtotal() const {
 
 // [VENTAS] IVA del carrito usando la misma tasa que VentasCobro.
 double Carrito::iva() const {
-    return subtotal() * VentasCobro::tasaIVA();
+    return std::round(subtotal() * VentasCobro::tasaIVA());
 }
 
 // [VENTAS] Total del carrito: subtotal + IVA.

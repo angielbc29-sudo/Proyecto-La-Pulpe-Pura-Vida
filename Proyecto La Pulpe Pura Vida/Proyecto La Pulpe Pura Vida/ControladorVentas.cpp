@@ -114,7 +114,7 @@ bool ControladorVentas::cobrar(double efectivo, std::string* mensajeError) {
     }
 
     if (carrito_.estaVacio()) {
-        if (mensajeError) *mensajeError = "El carrito esta vacio.";
+        if (mensajeError) *mensajeError = "El carrito está vacío.";
         return false;
     }
 
@@ -149,7 +149,7 @@ bool ControladorVentas::cobrar(double efectivo, std::string* mensajeError) {
     // 4) Verificar que el numero no exista antes de tocar el inventario.
     try {
         if (historial_->existe(venta.numero())) {
-            if (mensajeError) *mensajeError = "Ya existe la venta N.o " + std::to_string(venta.numero()) + ".";
+            if (mensajeError) *mensajeError = "Ya existe la venta N.º " + std::to_string(venta.numero()) + ".";
             return false;
         }
     }

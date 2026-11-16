@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include <QString>
 #include <QWidget>
 
 #include "ControladorVentas.h"
@@ -10,6 +11,7 @@
 
 class Historial;
 class QDoubleSpinBox;
+class QFrame;
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -46,12 +48,17 @@ private:
     QLabel* lblCambio;
     QPushButton* btnCobrar;
     QPushButton* btnVolverMenu;
+    QFrame* bannerMensaje;
+    QLabel* lblMensaje;
 
     void construirInterfaz();
     QWidget* crearPanelPrincipal();
     void aplicarEstilos();
     void actualizarVista();
     void actualizarResultadosBusqueda();
+    void actualizarCambio();
+    void mostrarMensaje(const QString& texto, bool esError);
+    void ocultarMensaje();
 
     QWidget* crearAccionesFila(const std::string& codigo);
 

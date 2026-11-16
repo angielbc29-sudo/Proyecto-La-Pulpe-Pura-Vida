@@ -1,5 +1,6 @@
 #include "VentasCobro.h"
 
+#include <cmath>
 #include <stdexcept>
 
 VentasCobro::VentasCobro()
@@ -46,7 +47,7 @@ double VentasCobro::subtotal() const
 // [VENTAS] IVA calculado sobre el subtotal (13%).
 double VentasCobro::iva() const
 {
-    return subtotal() * tasaIVA();
+    return std::round(subtotal() * tasaIVA());
 }
 
 // [VENTAS] Monto total a cobrar: subtotal + IVA.
