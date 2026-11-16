@@ -32,6 +32,8 @@ public:
 	//Consulta y validaciones de unicidad
 
 	std::vector<Producto> getProductosActivos() const;
+	std::vector<Producto> getTodosLosProductos() const;
 	bool validarCodigoUnico(const std::string& codigo) const;
+	bool validarNombreUnico(const std::string& nombre, const std::string& codigoExcluido = "") const;
 
 };

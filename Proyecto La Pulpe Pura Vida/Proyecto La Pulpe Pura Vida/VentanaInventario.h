@@ -9,7 +9,6 @@
 #include <QScrollArea>
 #include <QLabel>
 #include <QFrame>
-#include <QMessageBox>
 #include <vector>
 #include "GestorInventario.h"
 

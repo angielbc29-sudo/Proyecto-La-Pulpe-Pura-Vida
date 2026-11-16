@@ -15,9 +15,32 @@ GestorInventario::~GestorInventario() {
 
 //validaciones 
 
+// Quita los ceros de la izquierda para que "8" y "008" cuenten como el mismo código
+static std::string sinCerosIzquierda(const std::string& codigo) {
+	size_t inicio = codigo.find_first_not_of('0');
+	if (inicio == std::string::npos) {
+		return "0";
+	}
+	return codigo.substr(inicio);
+}
+
 bool GestorInventario::validarCodigoUnico(const std::string& codigo) const {
 	for (const auto& prod : listaProductos) {
-		if (prod.getCodigo() == codigo) {
+		if (sinCerosIzquierda(prod.getCodigo()) == sinCerosIzquierda(codigo)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// El nombre no se puede repetir (sin importar mayúsculas). Al editar se excluye el mismo producto
+bool GestorInventario::validarNombreUnico(const std::string& nombre, const std::string& codigoExcluido) const {
+	QString buscado = QString::fromStdString(nombre).trimmed();
+	for (const auto& prod : listaProductos) {
+		if (prod.getCodigo() == codigoExcluido) {
+			continue;
+		}
+		if (QString::fromStdString(prod.getNombre()).trimmed().compare(buscado, Qt::CaseInsensitive) == 0) {
 			return false;
 		}
 	}
@@ -28,6 +51,9 @@ bool GestorInventario::validarCodigoUnico(const std::string& codigo) const {
 
 bool GestorInventario::agregarProducto(const Producto& nuevo) {
 	if (!validarCodigoUnico(nuevo.getCodigo())) {
+		return false;
+	}
+	if (!validarNombreUnico(nuevo.getNombre())) {
 		return false;
 	}
 	if (!nuevo.validarPrecio(nuevo.getPrecio())) {
@@ -91,6 +117,12 @@ std::vector <Producto> GestorInventario::getProductosActivos() const {
 	return activos;
 }
 
+//Consultar todos los productos (activos e inactivos), en el mismo orden del archivo
+
+std::vector<Producto> GestorInventario::getTodosLosProductos() const {
+	return listaProductos;
+}
+
 //Metodos de conexion con el modulo de ventas
 
 // Ventas pregunta: ¿Hay suficiente stock para el carrito?
@@ -98,7 +130,7 @@ bool GestorInventario::verificarDisponibilidad(const std::string& codigo, int ca
 
 	Producto* prod = buscarPorCodigo(codigo);
 	if (prod != nullptr && prod->getActivo() && prod->getStock() >= cantidad) {
-		return true; 
+		return true;
 	}
 	return false;
 }
