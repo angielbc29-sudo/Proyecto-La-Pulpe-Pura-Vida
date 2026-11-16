@@ -113,7 +113,17 @@ std::vector<VentasCobro> AlmacenJson::listar() const {
     std::vector<VentasCobro> res;
     const QJsonArray arreglo = leerArreglo();
     for (const QJsonValue& val : arreglo)
-        res.push_back(deJson(val.toObject()));
+    {
+        // Si un registro está dañado se salta, para que no se pierda todo el historial por una sola venta
+        try
+        {
+            res.push_back(deJson(val.toObject()));
+        }
+        catch (const ErrorHistorial&)
+        {
+            continue;
+        }
+    }
     return res;
 }
 

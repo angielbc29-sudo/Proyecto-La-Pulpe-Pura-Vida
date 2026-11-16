@@ -27,5 +27,7 @@ void TicketPdf::guardar(const VentasCobro& venta, const QString& ruta) const {
 
     QTextDocument doc;
     doc.setHtml(crear(venta));
+    // Con el tamaño de página definido, print() ya no agrega el número de página abajo
+    doc.setPageSize(pdf.pageLayout().paintRectPixels(96).size());
     doc.print(&pdf);
 }

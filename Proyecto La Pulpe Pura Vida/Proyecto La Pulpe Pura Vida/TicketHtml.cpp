@@ -11,8 +11,7 @@ QString TicketHtml::crear(const VentasCobro& v) const {
     h += "<!DOCTYPE html><html><head><meta charset=\"utf-8\">";
     h += "<title>Ticket N.º " + Formato::numero(v.numero()) + "</title></head>";
     h += "<body style=\"font-family:'Courier New',monospace; font-size:10pt;\">";
-    h += "<h2 align=\"center\">" + negocio_.toHtmlEscaped().toUpper() + "</h2>";
-    h += "<p align=\"center\">La Pulpe Pura Vida</p><hr>";
+    h += "<h2 align=\"center\">" + negocio_.toHtmlEscaped().toUpper() + "</h2><hr>";
     h += "<p><b>TICKET / FACTURA N.º " + Formato::numero(v.numero()) + "</b><br>" +
         v.fecha().toString("dd/MM/yyyy") + " &nbsp; " + v.fecha().toString("HH:mm") +
         "<br>Cajero: " + v.cajero().toHtmlEscaped() + "</p><hr>";

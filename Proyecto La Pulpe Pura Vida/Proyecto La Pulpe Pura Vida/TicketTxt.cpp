@@ -10,7 +10,6 @@ QString TicketTxt::crear(const VentasCobro& v) const {
     const QString sep(W, QChar('-'));
     QString t;
     t += Formato::centrar(negocio_.toUpper(), W) + "\n";
-    t += Formato::centrar("La Pulpe Pura Vida", W) + "\n";
     t += sep + "\n";
     t += "TICKET / FACTURA N.º " + Formato::numero(v.numero()) + "\n";
     t += Formato::fila(v.fecha().toString("dd/MM/yyyy"), v.fecha().toString("HH:mm"), W) + "\n";
