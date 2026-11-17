@@ -273,7 +273,7 @@ RegistroUsuarioDialog::RegistroUsuarioDialog(IUsuarioRepository* repo, QWidget* 
 
 bool RegistroUsuarioDialog::validarFormulario()
 {
-    QString nombre = txtNombre->text().trimmed();
+    QString nombre = txtNombre->text().simplified();   // quita espacios de más ("Ana  María" -> "Ana María")
     QString cedula = txtCedula->text().trimmed();
     QString telefono = txtTelefono->text().trimmed();
     QString usuario = txtUsuario->text();
@@ -314,6 +314,10 @@ bool RegistroUsuarioDialog::validarFormulario()
     else if (password.length() < 4)
     {
         error = "La contraseña debe tener al menos 4 caracteres.";
+    }
+    else if (password.trimmed().isEmpty())
+    {
+        error = "La contraseña no puede tener solo espacios.";
     }
     else if (password != confirma)
     {
@@ -357,7 +361,7 @@ void RegistroUsuarioDialog::showEvent(QShowEvent* evento)
     txtNombre->setFocus();
 }
 
-// ---------------- Métodos privados ----------------
+// ---------------- Slots ----------------
 
 void RegistroUsuarioDialog::onBotonConfirmarClicked()
 {
@@ -377,7 +381,7 @@ void RegistroUsuarioDialog::onBotonConfirmarClicked()
         }
     }
 
-    std::string nombre = txtNombre->text().trimmed().toStdString();
+    std::string nombre = txtNombre->text().simplified().toStdString();
 
     // La cédula y el teléfono se guardan con guiones, igual que los usuarios que ya existen:
     // 1-1111-1111 y 8888-1111

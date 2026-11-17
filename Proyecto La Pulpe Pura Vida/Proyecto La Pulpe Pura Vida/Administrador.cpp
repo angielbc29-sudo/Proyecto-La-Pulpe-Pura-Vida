@@ -6,8 +6,9 @@ Administrador::Administrador(int id, std::string user, std::string pass, std::st
 {
 }
 
-bool Administrador::tienePermiso(Permiso p) const
+bool Administrador::tienePermiso(Permiso) const
 {
+    // El administrador tiene todos los permisos, por eso no necesita revisar cuál se pide
     return true;
 }
 

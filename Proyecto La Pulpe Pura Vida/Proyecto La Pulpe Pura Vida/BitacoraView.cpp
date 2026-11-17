@@ -69,7 +69,7 @@ BitacoraView::BitacoraView(QWidget* parent)
 
     // ----- Filtros -----
     txtBuscar = new QLineEdit(this);
-    txtBuscar->setPlaceholderText("Buscar...");
+    txtBuscar->setPlaceholderText("Buscar por usuario, acción o detalle...");
     txtBuscar->setToolTip("Busca por usuario, acción o detalle");
     txtBuscar->setClearButtonEnabled(true);
 
@@ -206,6 +206,7 @@ void BitacoraView::llenarTabla()
     QString busqueda = sinTildes(txtBuscar->text().trimmed());
     QDate hoy = QDate::currentDate();
 
+    tabla->clearSpans();
     tabla->setRowCount(0);
 
     for (size_t i = 0; i < registros.size(); i++)
@@ -260,4 +261,16 @@ void BitacoraView::llenarTabla()
 
     int cantidad = tabla->rowCount();
     lblCantidad->setText(QString::number(cantidad) + (cantidad == 1 ? " registro" : " registros"));
+
+    // Si ningún renglón cumple los filtros, se avisa en un renglón que ocupa toda la tabla
+    if (cantidad == 0)
+    {
+        tabla->insertRow(0);
+        tabla->setSpan(0, 0, 1, tabla->columnCount());
+
+        QTableWidgetItem* itemVacio = crearItem("No se encontraron registros con esa búsqueda.");
+        itemVacio->setTextAlignment(Qt::AlignCenter);
+        itemVacio->setForeground(QBrush(QColor("#8a7560")));
+        tabla->setItem(0, 0, itemVacio);
+    }
 }

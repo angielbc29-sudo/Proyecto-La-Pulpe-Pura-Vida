@@ -22,7 +22,6 @@
 #include "VentanaInventario.h"
 #include "VentasWindow.h"
 #include "GestorInventario.h"
-#include "UsuarioJsonRepository.h"
 #include "GestionUsuariosView.h"
 #include "BitacoraView.h"
 #include "Bitacora.h"
@@ -145,7 +144,7 @@ MenuPrincipalView::MenuPrincipalView(QWidget* parent)
 
     btnComprobantes = crearTarjeta(cuerpo, "🧾", "Comprobantes e Historial",
         esCajero ? "Revisión y reimpresión de comprobantes de ventas autorizadas."
-        : "Historial permanente de ventas y visor de tickets en TXT / HTML.");
+        : "Historial permanente de ventas y visor de tickets en TXT / HTML / PDF.");
 
     btnUsuarios = crearTarjeta(cuerpo, "👥", "Usuarios y Permisos",
         "Control de roles, asignación de turnos y activación de personal.");
@@ -259,7 +258,7 @@ void MenuPrincipalView::configurarVistaSegunRol()
     }
     else
     {
-        lblSubtitulo->setText("¿Qué área deseas gestionar hoy?");
+        lblSubtitulo->setText("¿Qué área desea gestionar hoy?");
     }
 
     // Cada tarjeta solo se muestra si el usuario tiene el permiso correspondiente
@@ -324,12 +323,23 @@ void MenuPrincipalView::abrirModulo(int idModulo)
     // 1 = Productos/Inventario, 2 = Ventas/Cobro, 3 = Comprobantes/Historial, 4 = Usuarios/Permisos, 5 = Bitácora
     // Todos los módulos se muestran aquí mismo, como una página más del menú
 
+    if (idModulo < 1 || idModulo > 5)
+    {
+        return;
+    }
+
+    // Doble seguridad: aunque la tarjeta esté oculta, nunca se abre un módulo sin su permiso
+    // (en el mismo orden que los módulos: el 1 está en la posición 0)
+    const Permiso permisos[] = { Permiso::GESTIONAR_PRODUCTOS, Permiso::REALIZAR_VENTA, Permiso::CONSULTAR_HISTORIAL,
+                                 Permiso::GESTIONAR_USUARIOS, Permiso::VER_BITACORA };
+    if (usuarioActivo == nullptr || !usuarioActivo->tienePermiso(permisos[idModulo - 1]))
+    {
+        return;
+    }
+
     // Queda registrado en la bitácora a cuál módulo entró el usuario
     const char* nombresModulos[] = { "", "Inventario", "Ventas", "Historial", "Usuarios", "Bitácora" };
-    if (idModulo >= 1 && idModulo <= 5)
-    {
-        Bitacora::registrar(nombresModulos[idModulo], "Ingreso al módulo");
-    }
+    Bitacora::registrar(nombresModulos[idModulo], "Ingreso al módulo");
 
     switch (idModulo)
     {
@@ -440,7 +450,7 @@ void MenuPrincipalView::abrirModulo(int idModulo)
 
 void MenuPrincipalView::onBotonCerrarSesionClicked()
 {
-    // Se cierran las ventanas de los demás módulos que sigan abiertas (por ejemplo, Inventario)
+    // Se cierra cualquier otra ventana que siga abierta (los módulos ya se abren dentro del menú)
     const QWidgetList ventanas = QApplication::topLevelWidgets();
     for (QWidget* ventana : ventanas)
     {
