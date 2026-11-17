@@ -112,7 +112,7 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     // ----- Tabla -----
     tabla = new QTableWidget(this);
     tabla->setColumnCount(9);
-    tabla->setHorizontalHeaderLabels({ "N.°", "Usuario", "Nombre Completo", "Cédula",
+    tabla->setHorizontalHeaderLabels({ "N.º", "Usuario", "Nombre Completo", "Cédula",
                                        "Teléfono", "Rol", "Turno", "Estado", "Acción" });
     tabla->verticalHeader()->setVisible(false);
     tabla->verticalHeader()->setDefaultSectionSize(56);
@@ -307,7 +307,7 @@ void GestionUsuariosView::cargarTablaUsuarios()
         if (esMiCuenta)
         {
             btnAccion->setEnabled(false);
-            btnAccion->setToolTip("No puedes desactivar tu propia cuenta");
+            btnAccion->setToolTip("No puede desactivar su propia cuenta");
         }
 
         int idUsuario = u->getId();
