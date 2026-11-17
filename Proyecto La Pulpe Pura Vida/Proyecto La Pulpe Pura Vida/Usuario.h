@@ -35,6 +35,8 @@ public:
     // Setters
     void setActivo(bool estado);
     void setPasswordHash(std::string hash);
+    void setUsername(std::string user);
+    void setTelefono(std::string tel);
 
     // Métodos virtuales puros (en cursiva en el diagrama = abstractos)
     virtual bool tienePermiso(Permiso p) const = 0;

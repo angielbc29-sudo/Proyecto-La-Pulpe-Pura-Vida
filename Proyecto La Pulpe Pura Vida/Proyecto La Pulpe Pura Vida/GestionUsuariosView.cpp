@@ -19,6 +19,7 @@
 #include <QVBoxLayout>
 
 #include "Bitacora.h"
+#include "EditarUsuarioDialog.h"
 #include "IUsuarioRepository.h"
 #include "RegistroUsuarioDialog.h"
 #include "Sesion.h"
@@ -63,7 +64,7 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
 {
     this->repo = repo;
     this->idPorDesactivar = -1;
-    this->fondoRegistro = nullptr;
+    this->fondoFormulario = nullptr;
 
     setWindowTitle("La Pulpe Pura Vida - Gestión de usuarios y permisos");
     setAttribute(Qt::WA_StyledBackground, true);
@@ -113,7 +114,7 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     tabla = new QTableWidget(this);
     tabla->setColumnCount(9);
     tabla->setHorizontalHeaderLabels({ "N.º", "Usuario", "Nombre Completo", "Cédula",
-                                       "Teléfono", "Rol", "Turno", "Estado", "Acción" });
+                                       "Teléfono", "Rol", "Turno", "Estado", "Acciones" });
     tabla->verticalHeader()->setVisible(false);
     tabla->verticalHeader()->setDefaultSectionSize(56);
     tabla->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -125,8 +126,8 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
     QHeaderView* cabecera = tabla->horizontalHeader();
     cabecera->setSectionResizeMode(QHeaderView::ResizeToContents);
     cabecera->setSectionResizeMode(2, QHeaderView::Stretch);   // el nombre ocupa el espacio que sobre
-    cabecera->setSectionResizeMode(8, QHeaderView::Fixed);     // la columna del botón tiene un ancho fijo
-    tabla->setColumnWidth(8, 134);
+    cabecera->setSectionResizeMode(8, QHeaderView::Fixed);     // la columna de los botones tiene un ancho fijo
+    tabla->setColumnWidth(8, 212);
     cabecera->setHighlightSections(false);
 
     // El encabezado tiene alto fijo y la franja de la barra de desplazamiento siempre está reservada:
@@ -204,6 +205,8 @@ GestionUsuariosView::GestionUsuariosView(IUsuarioRepository* repo, QWidget* pare
         QTableWidget QScrollBar::handle:vertical:hover { background-color: #e67e22; }
         QTableWidget QScrollBar::handle:vertical:disabled { background: transparent; }
         QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical { background: none; }
+        QPushButton#btnEditar { background-color: #ffffff; color: #d35400; border: 1px solid #e67e22; border-radius: 6px; padding: 6px 14px; font-weight: bold; }
+        QPushButton#btnEditar:hover { background-color: #e67e22; color: #ffffff; }
         QPushButton#btnDesactivar { background-color: #ffffff; color: #c0392b; border: 1px solid #c0392b; border-radius: 6px; padding: 6px 14px; font-weight: bold; }
         QPushButton#btnDesactivar:hover { background-color: #c0392b; color: #ffffff; }
         QPushButton#btnActivar { background-color: #ffffff; color: #1e8449; border: 1px solid #1e8449; border-radius: 6px; padding: 6px 14px; font-weight: bold; }
@@ -280,7 +283,10 @@ void GestionUsuariosView::cargarTablaUsuarios()
 
         tabla->setItem(fila, 0, crearItem(QString::number(u->getId()), true));
         tabla->setItem(fila, 1, crearItem(QString::fromStdString(u->getUsername()), false));
-        tabla->setItem(fila, 2, crearItem(QString::fromStdString(u->getNombreCompleto()), false));
+        // Si el nombre es muy largo y se corta con "...", al pasar el mouse se ve completo
+        QTableWidgetItem* itemNombre = crearItem(QString::fromStdString(u->getNombreCompleto()), false);
+        itemNombre->setToolTip(itemNombre->text());
+        tabla->setItem(fila, 2, itemNombre);
         tabla->setItem(fila, 3, crearItem(QString::fromStdString(u->getCedula()), false));
         tabla->setItem(fila, 4, crearItem(QString::fromStdString(u->getTelefono()), false));
         tabla->setItem(fila, 5, crearItem(QString::fromStdString(u->getNombreRol()), false));
@@ -316,11 +322,26 @@ void GestionUsuariosView::cargarTablaUsuarios()
                 onBotonCambiarEstadoClicked(idUsuario);
             });
 
-        // El botón va dentro de un contenedor para que no ocupe toda la celda
+        // Botón para modificar el nombre de usuario y el teléfono
+        QPushButton* btnEditar = new QPushButton("Editar");
+        btnEditar->setObjectName("btnEditar");
+        btnEditar->setCursor(Qt::PointingHandCursor);
+        btnEditar->setMinimumSize(76, 34);
+
+        connect(btnEditar, &QPushButton::clicked, this, [this, idUsuario]()
+            {
+                onBotonEditarClicked(idUsuario);
+            });
+
+        // Los botones van dentro de un contenedor para que no ocupen toda la celda
         QWidget* contenedor = new QWidget();
         QHBoxLayout* layoutCelda = new QHBoxLayout(contenedor);
-        layoutCelda->setContentsMargins(10, 6, 10, 6);
-        layoutCelda->addWidget(btnAccion, 0, Qt::AlignCenter);
+        layoutCelda->setContentsMargins(6, 6, 6, 6);
+        layoutCelda->setSpacing(6);
+        layoutCelda->addStretch();
+        layoutCelda->addWidget(btnEditar);
+        layoutCelda->addWidget(btnAccion);
+        layoutCelda->addStretch();
         tabla->setCellWidget(fila, 8, contenedor);
     }
 
@@ -433,43 +454,63 @@ void GestionUsuariosView::onBotonConfirmarAvisoClicked()
     cambiarEstado(usuario);
 }
 
-void GestionUsuariosView::onBotonRegistrarNuevoClicked()
+void GestionUsuariosView::abrirFormulario(QDialog* dialogo, const QString& mensajeExito)
 {
     aviso->hide();
 
     // Fondo oscuro que cubre toda la ventana (como en la página de referencia)
     QWidget* ventana = window();
-    fondoRegistro = new QWidget(ventana);
-    fondoRegistro->setObjectName("fondoRegistro");
-    fondoRegistro->setAttribute(Qt::WA_StyledBackground, true);
-    fondoRegistro->setStyleSheet("QWidget#fondoRegistro { background-color: rgba(42, 37, 35, 165); }");
-    fondoRegistro->setGeometry(ventana->rect());
+    fondoFormulario = new QWidget(ventana);
+    fondoFormulario->setObjectName("fondoFormulario");
+    fondoFormulario->setAttribute(Qt::WA_StyledBackground, true);
+    fondoFormulario->setStyleSheet("QWidget#fondoFormulario { background-color: rgba(42, 37, 35, 165); }");
+    fondoFormulario->setGeometry(ventana->rect());
 
     // El formulario se dibuja dentro de la ventana, centrado sobre el fondo
-    RegistroUsuarioDialog* dialogo = new RegistroUsuarioDialog(repo, fondoRegistro);
+    dialogo->setParent(fondoFormulario);
     dialogo->setWindowFlags(Qt::Widget);
 
-    QVBoxLayout* layoutFondo = new QVBoxLayout(fondoRegistro);
+    QVBoxLayout* layoutFondo = new QVBoxLayout(fondoFormulario);
     layoutFondo->setContentsMargins(0, 0, 0, 0);
     layoutFondo->addWidget(dialogo, 0, Qt::AlignCenter);
 
     ventana->installEventFilter(this);   // para seguir el tamaño de la ventana
-    fondoRegistro->show();
-    fondoRegistro->raise();
+    fondoFormulario->show();
+    fondoFormulario->raise();
 
-    // Al cerrar el formulario (Confirmar o Cancelar) se quita el fondo
-    connect(dialogo, &QDialog::finished, this, [this, ventana](int resultado)
+    // Al cerrar el formulario (Guardar/Confirmar o Cancelar) se quita el fondo
+    connect(dialogo, &QDialog::finished, this, [this, ventana, mensajeExito](int resultado)
         {
             ventana->removeEventFilter(this);
-            fondoRegistro->deleteLater();
-            fondoRegistro = nullptr;
+            fondoFormulario->deleteLater();
+            fondoFormulario = nullptr;
 
             if (resultado == QDialog::Accepted)
             {
                 cargarTablaUsuarios();
-                mostrarAviso("✓ El usuario nuevo se registró correctamente.", "exito");
+                mostrarAviso(mensajeExito, "exito");
             }
         });
+}
+
+void GestionUsuariosView::onBotonRegistrarNuevoClicked()
+{
+    abrirFormulario(new RegistroUsuarioDialog(repo), "✓ El usuario nuevo se registró correctamente.");
+}
+
+void GestionUsuariosView::onBotonEditarClicked(int idUsuario)
+{
+    std::shared_ptr<Usuario> usuario = buscarUsuario(idUsuario);
+    if (usuario == nullptr)
+    {
+        mostrarAviso("⚠️ No se encontró ese usuario. Puede que el archivo haya cambiado.", "error");
+        cargarTablaUsuarios();
+        return;
+    }
+
+    QString nombre = QString::fromStdString(usuario->getNombreCompleto());
+    abrirFormulario(new EditarUsuarioDialog(repo, usuario),
+        "✓ Los datos de " + nombre + " se actualizaron correctamente.");
 }
 
 // ---------------- Eventos ----------------
@@ -477,9 +518,9 @@ void GestionUsuariosView::onBotonRegistrarNuevoClicked()
 bool GestionUsuariosView::eventFilter(QObject* objeto, QEvent* evento)
 {
     // Si la ventana cambia de tamaño, el fondo oscuro la sigue cubriendo completa
-    if (fondoRegistro != nullptr && objeto == window() && evento->type() == QEvent::Resize)
+    if (fondoFormulario != nullptr && objeto == window() && evento->type() == QEvent::Resize)
     {
-        fondoRegistro->setGeometry(window()->rect());
+        fondoFormulario->setGeometry(window()->rect());
     }
     return QWidget::eventFilter(objeto, evento);
 }
