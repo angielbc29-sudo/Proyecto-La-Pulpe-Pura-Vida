@@ -5,6 +5,7 @@
 
 class IUsuarioRepository;
 class QComboBox;
+class QDialog;
 class QFrame;
 class QLabel;
 class QLineEdit;
@@ -12,7 +13,7 @@ class QPushButton;
 class QTableWidget;
 class Usuario;
 
-// Pantalla con la tabla de usuarios (activar, desactivar y registrar nuevos)
+// Pantalla con la tabla de usuarios (registrar, editar, activar y desactivar)
 class GestionUsuariosView : public QWidget
 {
     Q_OBJECT
@@ -37,8 +38,8 @@ private:
     QPushButton* btnAvisoConfirmar;
     int idPorDesactivar;    // usuario que se desactiva si se confirma el aviso
 
-    // Fondo oscuro que cubre la ventana mientras el registro está abierto
-    QWidget* fondoRegistro;
+    // Fondo oscuro que cubre la ventana mientras el registro o la edición está abierto
+    QWidget* fondoFormulario;
 
     // Vuelve a llenar la tabla con los usuarios guardados que cumplen los filtros
     void cargarTablaUsuarios();
@@ -52,8 +53,13 @@ private:
     // tipo: "confirmar" (rojo con botones), "error" (rojo) o "exito" (verde)
     void mostrarAviso(const QString& texto, const QString& tipo);
 
+    // Muestra el formulario (registro o edición) dentro de la ventana, sobre un fondo oscuro.
+    // Si se guarda, recarga la tabla y muestra el mensaje de éxito.
+    void abrirFormulario(QDialog* dialogo, const QString& mensajeExito);
+
 private slots:
     void onBotonCambiarEstadoClicked(int idUsuario);
+    void onBotonEditarClicked(int idUsuario);
     void onBotonRegistrarNuevoClicked();
     void onBotonConfirmarAvisoClicked();
 
@@ -62,7 +68,7 @@ signals:
     void volverAlMenu();
 
 protected:
-    // Mantiene el fondo oscuro del registro del mismo tamaño que la ventana
+    // Mantiene el fondo oscuro del formulario del mismo tamaño que la ventana
     bool eventFilter(QObject* objeto, QEvent* evento) override;
 
 public:

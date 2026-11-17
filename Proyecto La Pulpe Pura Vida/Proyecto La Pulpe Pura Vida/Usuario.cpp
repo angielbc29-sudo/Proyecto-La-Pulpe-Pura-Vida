@@ -66,3 +66,13 @@ void Usuario::setPasswordHash(std::string hash)
 {
     passwordHash = hash;
 }
+
+void Usuario::setUsername(std::string user)
+{
+    username = user;
+}
+
+void Usuario::setTelefono(std::string tel)
+{
+    telefono = tel;
+}

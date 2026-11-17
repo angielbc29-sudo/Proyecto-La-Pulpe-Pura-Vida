@@ -79,6 +79,9 @@
     <ClCompile Include="AlmacenJson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EditarUsuarioDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="RegistroUsuarioDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -213,6 +216,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="LoginDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="EditarUsuarioDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="RegistroUsuarioDialog.h">
