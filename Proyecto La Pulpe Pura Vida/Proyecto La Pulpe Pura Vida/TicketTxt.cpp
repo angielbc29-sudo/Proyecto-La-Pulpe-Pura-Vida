@@ -1,6 +1,6 @@
 #include "TicketTxt.h"
 #include "Formato.h"
-#include "Linea.h"   // [VENTAS] Pendiente creaacion de la clase Linea.h
+#include "Linea.h"   // [VENTAS] 
 
 QString TicketTxt::extension() const { return "txt"; }
 
